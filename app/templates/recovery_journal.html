@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recovery Journal - CareBridge AI</title>
+    <meta name="description" content="Log recovery notes and track daily milestones.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <style>
+        .page-body { padding: 28px; display: flex; flex-direction: column; gap: 24px; }
+        .jc { background: #fff; border-radius: 16px; box-shadow: var(--shadow); }
+        .jc-header { padding: 18px 22px 0; display: flex; align-items: center; justify-content: space-between; }
+        .jc-header h3 { font-size: 0.95rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+        .jc-header h3 i { color: var(--primary); }
+        .jc-body { padding: 18px 22px 22px; }
+        
+        .journal-layout { display: grid; grid-template-columns: 1fr 340px; gap: 20px; }
+        
+        .timeline { position: relative; padding-left: 20px; border-left: 2px solid var(--border-color); }
+        .timeline-item { position: relative; margin-bottom: 24px; }
+        .timeline-item:last-child { margin-bottom: 0; }
+        .timeline-dot {
+            position: absolute; left: -26px; top: 2px; width: 10px; height: 10px;
+            border-radius: 50%; background: var(--primary); border: 2px solid #fff;
+        }
+        .timeline-content {
+            background: var(--body-bg); border-radius: 12px; padding: 16px;
+        }
+        .timeline-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+        .timeline-date { font-size: 0.72rem; color: var(--text-secondary); font-weight: 600; }
+        .timeline-mood { font-size: 1.1rem; }
+
+        @media (max-width: 1000px) { .journal-layout { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    {% set active_page = 'journal' %}
+    {% include '_sidebar.html' %}
+
+    <main class="main-content" id="mainContent">
+        <header class="top-header">
+            <div class="header-left">
+                <button class="mobile-toggle" id="mobileToggle"><i class="fa-solid fa-bars"></i></button>
+                <div class="header-greeting">
+                    <h2>Recovery Journal 📓</h2>
+                    <p>Record your thoughts, track daily milestones, and store wellness progress.</p>
+                </div>
+            </div>
+        </header>
+
+        <div class="page-body">
+            <div class="journal-layout">
+                <!-- Left: Journal Timeline -->
+                <div class="jc">
+                    <div class="jc-header"><h3><i class="fa-solid fa-clock-rotate-left"></i> Timeline Notes</h3></div>
+                    <div class="jc-body">
+                        <div class="timeline" id="journalTimeline">
+                            <!-- Dynamic Journal Entries -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Create entry -->
+                <div class="jc" style="height:fit-content;">
+                    <div class="jc-header"><h3><i class="fa-solid fa-pen-nib"></i> Log Today's Entry</h3></div>
+                    <div class="jc-body">
+                        <form id="journalForm">
+                            <textarea id="noteText" style="width:100%;height:100px;padding:12px;border:1.5px solid var(--border-color);border-radius:10px;font-size:0.83rem;resize:none;outline:none;font-family:inherit;background:var(--body-bg);" placeholder="How is your recovery progress going today? Any achievements or observations..."></textarea>
+                            
+                            <div style="margin-top:14px;">
+                                <label style="font-size:0.75rem;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:6px;">Select Mood</label>
+                                <div style="display:flex;gap:10px;">
+                                    <button class="pain-btn" type="button" onclick="selectMood('happy', this)">😊 Happy</button>
+                                    <button class="pain-btn" type="button" onclick="selectMood('neutral', this)">😐 Neutral</button>
+                                    <button class="pain-btn" type="button" onclick="selectMood('tired', this)">😴 Tired</button>
+                                </div>
+                            </div>
+
+                            <button class="btn btn-primary btn-full" style="margin-top:16px;" type="submit">Save Entry</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let selectedMood = 'neutral';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const mobileToggle = document.getElementById('mobileToggle');
+            const mainContent = document.getElementById('mainContent');
+            if (sidebarToggle) sidebarToggle.addEventListener('click', () => { sidebar.classList.toggle('collapsed'); mainContent.classList.toggle('expanded'); });
+            if (mobileToggle) mobileToggle.addEventListener('click', () => sidebar.classList.toggle('mobile-open'));
+
+            loadJournalEntries();
+
+            document.getElementById('journalForm').addEventListener('submit', saveEntry);
+        });
+
+        async function loadJournalEntries() {
+            try {
+                const res = await fetch('/api/journal/timeline', {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('access_token') || ''}` }
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    const timeline = document.getElementById('journalTimeline');
+                    timeline.innerHTML = '';
+
+                    if (data.entries.length === 0) {
+                        timeline.innerHTML = '<p style="font-size:0.83rem;color:var(--text-secondary);text-align:center;">No journal entries logged. Write your first note on the right!</p>';
+                    } else {
+                        data.entries.forEach(e => {
+                            const date = new Date(e.created_at).toLocaleDateString('en-US', {
+                                month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                            });
+                            
+                            const moodMap = { 'happy': '😊 Happy', 'neutral': '😐 Neutral', 'tired': '😴 Tired' };
+                            const moodText = moodMap[e.mood] || '😐 Neutral';
+
+                            const item = document.createElement('div');
+                            item.className = 'timeline-item';
+                            item.innerHTML = `
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-content">
+                                    <div class="timeline-header">
+                                        <span class="timeline-date">${date}</span>
+                                        <span class="timeline-mood">${moodText}</span>
+                                    </div>
+                                    <p style="font-size:0.82rem;line-height:1.5;color:var(--text-primary);">${e.note}</p>
+                                </div>
+                            `;
+                            timeline.appendChild(item);
+                        });
+                    }
+                }
+            } catch (err) {
+                console.error("Error loading journal logs:", err);
+            }
+        }
+
+        function selectMood(mood, btn) {
+            selectedMood = mood;
+            document.querySelectorAll('.pain-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+        }
+
+        async function saveEntry(e) {
+            e.preventDefault();
+            const noteText = document.getElementById('noteText').value.trim();
+            if (!noteText) return;
+
+            try {
+                const res = await fetch('/api/journal/timeline', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('access_token') || ''}`
+                    },
+                    body: JSON.stringify({ note: noteText, mood: selectedMood })
+                });
+
+                if (res.ok) {
+                    document.getElementById('noteText').value = '';
+                    document.querySelectorAll('.pain-btn').forEach(b => b.classList.remove('selected'));
+                    selectedMood = 'neutral';
+                    loadJournalEntries();
+                }
+            } catch (err) {
+                console.error("Error saving journal note:", err);
+            }
+        }
+    </script>
+</body>
+</html>

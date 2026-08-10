@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clinician Center - CareBridge AI</title>
+    <meta name="description" content="Doctor and Coordinator Command Workspace.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <style>
+        .page-body { padding: 28px; display: flex; flex-direction: column; gap: 24px; }
+        .cc { background: #fff; border-radius: 16px; box-shadow: var(--shadow); }
+        .cc-header { padding: 18px 22px 0; display: flex; align-items: center; justify-content: space-between; }
+        .cc-header h3 { font-size: 0.95rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+        .cc-header h3 i { color: #dc2626; }
+        .cc-body { padding: 18px 22px 22px; }
+        
+        .cc-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 20px; }
+        
+        .alert-row {
+            display: flex; align-items: center; gap: 14px; padding: 14px;
+            border: 1px solid var(--border-color); border-radius: 12px; margin-bottom: 10px;
+            transition: all 0.2s; cursor: pointer;
+        }
+        .alert-row:hover { border-color: #ef4444; background: #fff5f5; }
+        .alert-level { font-size: 0.7rem; font-weight: 700; padding: 4px 8px; border-radius: 6px; }
+        .alert-level.critical { background: #fee2e2; color: #dc2626; }
+        .alert-level.attention { background: #fef3c7; color: #b45309; }
+
+        .patient-card {
+            display: flex; align-items: center; justify-content: space-between; padding: 14px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .patient-card:last-child { border-bottom: none; }
+        .patient-info h5 { font-size: 0.88rem; font-weight: 600; margin-bottom: 2px; }
+        .patient-info p { font-size: 0.76rem; color: var(--text-secondary); }
+
+        @media (max-width: 1000px) { .cc-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    {% set active_page = 'clinician' %}
+    {% include '_sidebar.html' %}
+
+    <main class="main-content" id="mainContent">
+        <header class="top-header">
+            <div class="header-left">
+                <button class="mobile-toggle" id="mobileToggle"><i class="fa-solid fa-bars"></i></button>
+                <div class="header-greeting">
+                    <h2>Clinician Center 🩺</h2>
+                    <p>Doctor & Care Coordinator escalation command workspace.</p>
+                </div>
+            </div>
+        </header>
+
+        <div class="page-body">
+            <div class="cc-grid">
+                <!-- Left Column: Active Alerts Escalation Log -->
+                <div class="cc">
+                    <div class="cc-header">
+                        <h3><i class="fa-solid fa-triangle-exclamation"></i> Active Escalation Alerts</h3>
+                        <span class="badge badge-danger" id="activeAlertsCount">0 Alerts</span>
+                    </div>
+                    <div class="cc-body" id="alertsContainer">
+                        <!-- Dynamic Alert Rows -->
+                    </div>
+                </div>
+
+                <!-- Right Column: Patient Directory & Search Workspace -->
+                <div class="cc">
+                    <div class="cc-header" style="flex-wrap:wrap;gap:12px;">
+                        <h3><i class="fa-solid fa-users"></i> Patient Directory</h3>
+                        <input type="text" id="patientSearch" style="padding:6px 12px;border:1.5px solid var(--border-color);border-radius:8px;font-size:0.8rem;outline:none;width:180px;" placeholder="Search patient name...">
+                    </div>
+                    <div class="cc-body" id="patientsContainer">
+                        <!-- Dynamic Patient Cards -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const mobileToggle = document.getElementById('mobileToggle');
+            const mainContent = document.getElementById('mainContent');
+            if (sidebarToggle) sidebarToggle.addEventListener('click', () => { sidebar.classList.toggle('collapsed'); mainContent.classList.toggle('expanded'); });
+            if (mobileToggle) mobileToggle.addEventListener('click', () => sidebar.classList.toggle('mobile-open'));
+
+            loadClinicianData();
+        });
+
+        async function loadClinicianData() {
+            try {
+                // Fetch alerts
+                const alertsRes = await fetch('/api/escalation/alerts', {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('access_token') || ''}` }
+                });
+                const alertsData = await alertsRes.json();
+                
+                // Fetch prioritized patient index
+                const patientsRes = await fetch('/api/clinician/patients', {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('access_token') || ''}` }
+                });
+                const patientsData = await patientsRes.json();
+
+                if (alertsRes.ok) {
+                    const alertsCont = document.getElementById('alertsContainer');
+                    alertsCont.innerHTML = '';
+                    document.getElementById('activeAlertsCount').textContent = `${alertsData.alerts.length} Active`;
+                    
+                    if (alertsData.alerts.length === 0) {
+                        alertsCont.innerHTML = '<p style="font-size:0.83rem;color:var(--text-secondary);text-align:center;">All clear. No active alerts reported.</p>';
+                    } else {
+                        alertsData.alerts.forEach(a => {
+                            const levelClass = a.level === 'Priority' ? 'critical' : 'attention';
+                            const alertRow = document.createElement('div');
+                            alertRow.className = 'alert-row';
+                            alertRow.onclick = () => handleAlertAction(a._id);
+                            alertRow.innerHTML = `
+                                <div class="alert-level ${levelClass}">${a.level}</div>
+                                <div class="task-info">
+                                    <h5>${a.patient_name}</h5>
+                                    <p>${a.reason} · ${a.details}</p>
+                                </div>
+                                <i class="fa-solid fa-chevron-right" style="color:var(--text-secondary);font-size:0.8rem;"></i>
+                            `;
+                            alertsCont.appendChild(alertRow);
+                        });
+                    }
+                }
+
+                if (patientsRes.ok) {
+                    const patientsCont = document.getElementById('patientsContainer');
+                    patientsCont.innerHTML = '';
+                    patientsData.patients.forEach(p => {
+                        const patCard = document.createElement('div');
+                        patCard.className = 'patient-card';
+                        patCard.innerHTML = `
+                            <div class="patient-info">
+                                <h5>${p.name}</h5>
+                                <p>${p.diagnosis} · Checkins: ${p.checkins_logged}</p>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:12px;">
+                                ${p.active_alerts > 0 ? `<span class="badge badge-danger">${p.active_alerts} Alert</span>` : '<span class="badge badge-success">Stable</span>'}
+                                <button class="btn btn-outline btn-sm" style="font-size:0.75rem;padding:6px 12px;min-height:36px;" onclick="window.location.href='/ai-assistant?patient=${p.patient_id}'">Open File</button>
+                            </div>
+                        `;
+                        patientsCont.appendChild(patCard);
+                    });
+                }
+            } catch (err) {
+                console.error("Error loading clinician workspace:", err);
+            }
+        }
+
+        async function handleAlertAction(alertId) {
+            if (confirm('Acknowledge alert and mark as resolved?')) {
+                try {
+                    const res = await fetch('/api/escalation/action', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('access_token') || ''}`
+                        },
+                        body: JSON.stringify({ alert_id: alertId, action: 'Resolve', notes: 'Checked patient status, stable.' })
+                    });
+                    if (res.ok) {
+                        loadClinicianData();
+                    }
+                } catch (err) {
+                    console.error("Error updating alert status:", err);
+                }
+            }
+        }
+    </script>
+</body>
+</html>

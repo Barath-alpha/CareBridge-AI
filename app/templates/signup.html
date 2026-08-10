@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account — CareBridge AI</title>
+    <meta name="description" content="Join CareBridge AI and start your AI-powered recovery journey with personalized care plans and smart reminders.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+</head>
+<body>
+
+    <!-- Floating Particles -->
+    <div class="particles" id="particles"></div>
+
+    <main class="auth-page">
+        <div class="auth-card wide">
+
+            <!-- Brand -->
+            <div class="auth-brand">
+                <a href="/" class="brand-logo">
+                    <div class="brand-icon">
+                        <i class="fa-solid fa-heart-pulse"></i>
+                    </div>
+                    <span class="brand-text">CareBridge AI</span>
+                </a>
+            </div>
+
+            <!-- Alert -->
+            <div id="auth-alert" class="alert hidden" role="alert" aria-live="polite"></div>
+
+            <!-- Header -->
+            <div class="form-header">
+                <h1 class="form-title">Create your account</h1>
+                <p class="form-subtitle">Join thousands using AI-driven care. It takes less than 2 minutes.</p>
+            </div>
+
+            <!-- Signup Form -->
+            <form id="signupForm" class="auth-form" novalidate>
+
+                <!-- Row 1: Full Name (full width) -->
+                <div class="form-grid-2">
+                    <div class="input-group col-span-2">
+                        <label for="fullName">Full Name</label>
+                        <div class="input-wrap">
+                            <i class="fa-regular fa-user input-icon"></i>
+                            <input
+                                type="text"
+                                id="fullName"
+                                name="full_name"
+                                placeholder="John Doe"
+                                autocomplete="name"
+                                required
+                            >
+                        </div>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="input-group">
+                        <label for="email">Email Address</label>
+                        <div class="input-wrap">
+                            <i class="fa-regular fa-envelope input-icon"></i>
+                            <input
+                                type="email"
+                                id="email"
+                                name="email"
+                                placeholder="you@example.com"
+                                autocomplete="email"
+                                required
+                            >
+                        </div>
+                    </div>
+
+                    <!-- Mobile -->
+                    <div class="input-group">
+                        <label for="mobileNumber">Mobile Number</label>
+                        <div class="input-wrap">
+                            <i class="fa-solid fa-phone input-icon"></i>
+                            <input
+                                type="tel"
+                                id="mobileNumber"
+                                name="mobile_number"
+                                placeholder="+1 234 567 8900"
+                                autocomplete="tel"
+                                required
+                            >
+                        </div>
+                    </div>
+
+                    <!-- Age -->
+                    <div class="input-group">
+                        <label for="age">Age</label>
+                        <div class="input-wrap">
+                            <i class="fa-solid fa-calendar-days input-icon"></i>
+                            <input
+                                type="number"
+                                id="age"
+                                name="age"
+                                placeholder="30"
+                                min="1"
+                                max="120"
+                            >
+                        </div>
+                    </div>
+
+                    <!-- Gender -->
+                    <div class="input-group">
+                        <label for="gender">Gender</label>
+                        <div class="input-wrap">
+                            <i class="fa-solid fa-venus-mars input-icon"></i>
+                            <select id="gender" name="gender">
+                                <option value="" disabled selected>Select gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Non-binary">Non-binary</option>
+                                <option value="Prefer not to say">Prefer not to say</option>
+                            </select>
+                            <i class="fa-solid fa-chevron-down select-arrow"></i>
+                        </div>
+                    </div>
+
+                    <!-- Country -->
+                    <div class="input-group">
+                        <label for="country">Country</label>
+                        <div class="input-wrap">
+                            <i class="fa-solid fa-earth-americas input-icon"></i>
+                            <input
+                                type="text"
+                                id="country"
+                                name="country"
+                                placeholder="United States"
+                            >
+                        </div>
+                    </div>
+
+                    <!-- Language -->
+                    <div class="input-group">
+                        <label for="language">Preferred Language</label>
+                        <div class="input-wrap">
+                            <i class="fa-solid fa-language input-icon"></i>
+                            <select id="language" name="preferred_language">
+                                <option value="English" selected>English</option>
+                                <option value="Spanish">Spanish</option>
+                                <option value="French">French</option>
+                                <option value="Hindi">Hindi</option>
+                                <option value="Arabic">Arabic</option>
+                                <option value="Mandarin">Mandarin</option>
+                                <option value="Portuguese">Portuguese</option>
+                            </select>
+                            <i class="fa-solid fa-chevron-down select-arrow"></i>
+                        </div>
+                    </div>
+
+                    <!-- Emergency Contact -->
+                    <div class="input-group col-span-2">
+                        <label for="emergencyContact">Emergency Contact (optional)</label>
+                        <div class="input-wrap">
+                            <i class="fa-solid fa-truck-medical input-icon"></i>
+                            <input
+                                type="tel"
+                                id="emergencyContact"
+                                name="emergency_contact"
+                                placeholder="+1 987 654 3210"
+                            >
+                        </div>
+                    </div>
+
+                    <!-- Password -->
+                    <div class="input-group">
+                        <label for="password">Password</label>
+                        <div class="input-wrap">
+                            <i class="fa-solid fa-lock input-icon"></i>
+                            <input
+                                type="password"
+                                id="password"
+                                name="password"
+                                placeholder="Min. 8 characters"
+                                autocomplete="new-password"
+                                required
+                            >
+                            <span class="toggle-pwd" id="togglePwd" title="Show / hide password">
+                                <i class="fa-regular fa-eye" id="togglePwdIcon"></i>
+                            </span>
+                        </div>
+                        <!-- Strength bar -->
+                        <div class="pwd-strength" id="pwdStrength" style="display:none;">
+                            <div class="pwd-strength-bar">
+                                <div class="pwd-bar-seg" id="seg1"></div>
+                                <div class="pwd-bar-seg" id="seg2"></div>
+                                <div class="pwd-bar-seg" id="seg3"></div>
+                                <div class="pwd-bar-seg" id="seg4"></div>
+                            </div>
+                            <span class="pwd-strength-label" id="pwdStrengthLabel">Password strength</span>
+                        </div>
+                    </div>
+
+                    <!-- Confirm Password -->
+                    <div class="input-group">
+                        <label for="confirmPassword">Confirm Password</label>
+                        <div class="input-wrap">
+                            <i class="fa-solid fa-lock input-icon"></i>
+                            <input
+                                type="password"
+                                id="confirmPassword"
+                                name="confirm_password"
+                                placeholder="Re-enter password"
+                                autocomplete="new-password"
+                                required
+                            >
+                            <span class="toggle-pwd" id="toggleConfirmPwd" title="Show / hide password">
+                                <i class="fa-regular fa-eye" id="toggleConfirmPwdIcon"></i>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Terms -->
+                    <div class="input-group col-span-2">
+                        <label class="checkbox-label" style="text-transform:none; font-size:0.85rem; letter-spacing:0;">
+                            <input type="checkbox" id="terms" name="terms" required>
+                            <span>I agree to the <a href="#" class="form-link">Terms of Service</a> and <a href="#" class="form-link">Privacy Policy</a></span>
+                        </label>
+                    </div>
+
+                </div>
+
+                <!-- Submit -->
+                <button type="submit" class="btn btn-primary" id="signupBtn">
+                    <span id="signupBtnText">Create Free Account</span>
+                </button>
+
+            </form>
+
+            <!-- Footer -->
+            <p class="form-footer" style="margin-top:24px;">
+                Already have an account? <a href="/login" class="form-link">Sign in</a>
+            </p>
+
+        </div>
+    </main>
+
+    <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+</body>
+</html>

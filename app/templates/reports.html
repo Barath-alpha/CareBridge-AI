@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports - CareBridge AI</title>
+    <meta name="description" content="View and download your health reports and recovery trends.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <style>
+        .page-body { padding: 28px; display: flex; flex-direction: column; gap: 24px; }
+        .rc { background: #fff; border-radius: 16px; box-shadow: var(--shadow); display: flex; flex-direction: column; height: 100%; }
+        .rc-header { padding: 20px 24px 0; display: flex; align-items: center; justify-content: space-between; }
+        .rc-header h3 { font-size: var(--fs-h4); font-weight: 600; display: flex; align-items: center; gap: 8px; }
+        .rc-header h3 i { color: var(--primary); }
+        .rc-body { padding: 20px 24px 24px; flex: 1; display: flex; flex-direction: column; justify-content: center; }
+        
+        /* Grid Layouts with Perfect Alignment */
+        .reports-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; align-items: stretch; }
+        .reports-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; align-items: stretch; }
+
+        .page-hero {
+            background: linear-gradient(135deg, #0f766e, #0d9488, #14b8a6);
+            border-radius: 20px; padding: 28px 32px; color: #fff;
+            display: flex; align-items: center; gap: 24px;
+        }
+        .page-hero i.big { font-size: 2.5rem; opacity: 0.9; }
+        .page-hero h1 { font-size: 1.5rem; font-weight: 800; margin-bottom: 4px; }
+        .page-hero p { font-size: 0.875rem; opacity: 0.88; }
+
+        .stat-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+        .ss-card { background: #fff; border-radius: 14px; padding: 20px; box-shadow: var(--shadow); display: flex; align-items: center; gap: 14px; }
+        .ss-icon { width: 46px; height: 46px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+        .ss-info p { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 2px; }
+        .ss-info h4 { font-size: 1.3rem; font-weight: 800; line-height: 1; }
+
+        .report-list { display: flex; flex-direction: column; gap: 12px; height: 100%; justify-content: space-between; }
+        .report-item { display: flex; align-items: center; gap: 14px; padding: 14px; background: var(--body-bg); border-radius: 12px; cursor: pointer; transition: all 0.2s ease; border: 1px solid transparent; min-height: 48px; }
+        .report-item:hover { background: var(--primary-light); border-color: rgba(37, 99, 235, 0.15); }
+        .report-item i { color: var(--primary); font-size: 1.2rem; flex-shrink: 0; }
+        .report-item .ri-info { flex: 1; }
+        .report-item .ri-info h5 { font-size: 0.875rem; font-weight: 600; margin-bottom: 2px; }
+        .report-item .ri-info p { font-size: 0.75rem; color: var(--text-secondary); }
+
+        /* Perfect spacing for chart canvas containers */
+        .chart-container-wrap { position: relative; width: 100%; height: 100%; min-height: 150px; }
+
+        @media (max-width: 1100px) {
+            .reports-grid { grid-template-columns: 1fr; }
+            .stat-summary { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 768px) {
+            .reports-grid-3 { grid-template-columns: 1fr; }
+            .stat-summary { grid-template-columns: 1fr; }
+            .page-body { padding: 16px; gap: 16px; }
+        }
+    </style>
+</head>
+<body>
+    {% set active_page = 'reports' %}
+    {% include '_sidebar.html' %}
+
+    <main class="main-content" id="mainContent">
+        <header class="top-header">
+            <div class="header-left">
+                <button class="mobile-toggle" id="mobileToggle"><i class="fa-solid fa-bars"></i></button>
+                <div class="header-greeting">
+                    <h2>Reports 📊</h2>
+                    <p>Your health analytics and recovery trends at a glance.</p>
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-outline btn-sm" style="font-size:0.82rem;"><i class="fa-solid fa-download"></i> Export PDF</button>
+            </div>
+        </header>
+
+        <div class="page-body">
+            <div class="page-hero">
+                <i class="fa-solid fa-chart-line big"></i>
+                <div>
+                    <h1>Health Report — August 2026</h1>
+                    <p>Your 12-day recovery summary shows <strong>78% overall progress</strong>. Medication adherence is excellent at 92%.</p>
+                </div>
+            </div>
+
+            <!-- Summary stats -->
+            <div class="stat-summary">
+                <div class="ss-card">
+                    <div class="ss-icon" style="background:#eff6ff;color:#2563eb;"><i class="fa-solid fa-trophy"></i></div>
+                    <div class="ss-info"><p>Recovery Score</p><h4>78 <span style="font-size:0.8rem;font-weight:400;color:var(--text-secondary);">/100</span></h4></div>
+                </div>
+                <div class="ss-card">
+                    <div class="ss-icon" style="background:#f0fdf4;color:#16a34a;"><i class="fa-solid fa-pills"></i></div>
+                    <div class="ss-info"><p>Med Adherence</p><h4>92%</h4></div>
+                </div>
+                <div class="ss-card">
+                    <div class="ss-icon" style="background:#fef3c7;color:#b45309;"><i class="fa-solid fa-fire"></i></div>
+                    <div class="ss-info"><p>Check-in Streak</p><h4>12 days</h4></div>
+                </div>
+                <div class="ss-card">
+                    <div class="ss-icon" style="background:#f5f3ff;color:#7c3aed;"><i class="fa-solid fa-heart-pulse"></i></div>
+                    <div class="ss-info"><p>Avg Heart Rate</p><h4>72 bpm</h4></div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="reports-grid">
+                <div class="rc">
+                    <div class="rc-header">
+                        <h3><i class="fa-solid fa-chart-line"></i> Recovery Trend (12 Days)</h3>
+                        <div style="display:flex;gap:8px;">
+                            <button class="chip active" onclick="switchChart('week', this)">Week</button>
+                            <button class="chip" onclick="switchChart('month', this)">Month</button>
+                        </div>
+                    </div>
+                    <div class="rc-body"><canvas id="recoveryChart" height="110"></canvas></div>
+                </div>
+                <div class="rc">
+                    <div class="rc-header"><h3><i class="fa-solid fa-pills"></i> Medication Adherence</h3></div>
+                    <div class="rc-body" style="display:flex;flex-direction:column;align-items:center;gap:16px;">
+                        <canvas id="medChart" width="160" height="160"></canvas>
+                        <div style="display:flex;gap:16px;font-size:0.8rem;">
+                            <span><span style="display:inline-block;width:10px;height:10px;background:#22c55e;border-radius:50%;margin-right:4px;"></span>Taken (92%)</span>
+                            <span><span style="display:inline-block;width:10px;height:10px;background:#ef4444;border-radius:50%;margin-right:4px;"></span>Missed (8%)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="reports-grid-3">
+                <div class="rc">
+                    <div class="rc-header"><h3><i class="fa-solid fa-heart"></i> Vitals Trend</h3></div>
+                    <div class="rc-body"><canvas id="vitalChart" height="120"></canvas></div>
+                </div>
+                <div class="rc">
+                    <div class="rc-header"><h3><i class="fa-solid fa-face-smile"></i> Mood Trend</h3></div>
+                    <div class="rc-body"><canvas id="moodChart" height="120"></canvas></div>
+                </div>
+                <div class="rc">
+                    <div class="rc-header"><h3><i class="fa-solid fa-file-arrow-down"></i> Download Reports</h3></div>
+                    <div class="rc-body">
+                        <div class="report-list">
+                            <div class="report-item"><i class="fa-solid fa-file-pdf"></i><div class="ri-info"><h5>Weekly Summary</h5><p>Aug 4 – Aug 10, 2026</p></div><i class="fa-solid fa-download" style="color:var(--text-secondary);font-size:0.9rem;"></i></div>
+                            <div class="report-item"><i class="fa-solid fa-file-pdf"></i><div class="ri-info"><h5>Medication Report</h5><p>Full adherence history</p></div><i class="fa-solid fa-download" style="color:var(--text-secondary);font-size:0.9rem;"></i></div>
+                            <div class="report-item"><i class="fa-solid fa-file-pdf"></i><div class="ri-info"><h5>Vitals Report</h5><p>BP, HR, Temperature</p></div><i class="fa-solid fa-download" style="color:var(--text-secondary);font-size:0.9rem;"></i></div>
+                            <div class="report-item"><i class="fa-solid fa-file-csv"></i><div class="ri-info"><h5>Raw Data Export</h5><p>CSV format — all data</p></div><i class="fa-solid fa-download" style="color:var(--text-secondary);font-size:0.9rem;"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const mobileToggle = document.getElementById('mobileToggle');
+            const mainContent = document.getElementById('mainContent');
+            if (sidebarToggle) sidebarToggle.addEventListener('click', () => { sidebar.classList.toggle('collapsed'); mainContent.classList.toggle('expanded'); });
+            if (mobileToggle) mobileToggle.addEventListener('click', () => sidebar.classList.toggle('mobile-open'));
+
+            const weekData = { labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], datasets: [{ label: 'Recovery Score', data: [62,65,68,70,74,76,78], borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,0.07)', fill: true, tension: 0.4, pointBackgroundColor: '#2563eb', pointRadius: 4 }, { label: 'Med Adherence', data: [80,85,88,90,92,91,92], borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.06)', fill: true, tension: 0.4, pointBackgroundColor: '#10b981', pointRadius: 4 }] };
+            const monthData = { labels: ['Week 1','Week 2','Week 3','Week 4'], datasets: [{ label: 'Recovery Score', data: [55,64,72,78], borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,0.07)', fill: true, tension: 0.4 }, { label: 'Med Adherence', data: [78,84,90,92], borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.06)', fill: true, tension: 0.4 }] };
+            const recChart = new Chart(document.getElementById('recoveryChart').getContext('2d'), { type: 'line', data: weekData, options: { responsive: true, plugins: { legend: { position: 'top' } }, scales: { y: { min: 40, max: 100, grid: { color: 'rgba(0,0,0,0.04)' } }, x: { grid: { display: false } } } } });
+            window.switchChart = (p, btn) => { document.querySelectorAll('.chip').forEach(c => c.classList.remove('active')); btn.classList.add('active'); recChart.data = p === 'week' ? weekData : monthData; recChart.update(); };
+
+            new Chart(document.getElementById('medChart').getContext('2d'), { type: 'doughnut', data: { datasets: [{ data: [92,8], backgroundColor: ['#22c55e','#ef4444'], borderWidth: 0 }] }, options: { cutout: '75%', plugins: { legend: { display: false } } } });
+            new Chart(document.getElementById('vitalChart').getContext('2d'), { type: 'line', data: { labels: ['D1','D3','D5','D7','D10','Today'], datasets: [{ label: 'BP Systolic', data: [135,132,128,125,122,120], borderColor: '#ef4444', tension: 0.4, pointRadius: 3, borderWidth: 2 }] }, options: { plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { grid: { color: 'rgba(0,0,0,0.04)' } } } } });
+            new Chart(document.getElementById('moodChart').getContext('2d'), { type: 'bar', data: { labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], datasets: [{ data: [3,4,3,5,4,4,5], backgroundColor: ['rgba(239,68,68,0.6)','rgba(245,158,11,0.6)','rgba(239,68,68,0.6)','rgba(34,197,94,0.6)','rgba(34,197,94,0.6)','rgba(34,197,94,0.6)','rgba(37,99,235,0.6)'], borderRadius: 6 }] }, options: { plugins: { legend: { display: false } }, scales: { y: { min: 0, max: 5, ticks: { stepSize: 1 }, grid: { color: 'rgba(0,0,0,0.04)' } }, x: { grid: { display: false } } } } });
+        });
+    </script>
+</body>
+</html>

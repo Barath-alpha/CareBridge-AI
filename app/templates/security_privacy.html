@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security & Privacy - CareBridge AI</title>
+    <meta name="description" content="Manage your account security and audit logs.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <style>
+        .page-body { padding: 28px; display: flex; flex-direction: column; gap: 24px; }
+        .sc { background: #fff; border-radius: 16px; box-shadow: var(--shadow); }
+        .sc-header { padding: 18px 22px 0; display: flex; align-items: center; justify-content: space-between; }
+        .sc-header h3 { font-size: 0.95rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+        .sc-header h3 i { color: var(--primary); }
+        .sc-body { padding: 18px 22px 22px; }
+        
+        .security-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        
+        .audit-item {
+            display: flex; align-items: center; justify-content: space-between; padding: 12px 14px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .audit-item:last-child { border-bottom: none; }
+        .audit-info h5 { font-size: 0.85rem; font-weight: 600; }
+        .audit-info p { font-size: 0.74rem; color: var(--text-secondary); }
+        .audit-time { font-size: 0.72rem; color: var(--text-secondary); }
+
+        @media (max-width: 1000px) { .security-layout { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    {% set active_page = 'settings' %}
+    {% include '_sidebar.html' %}
+
+    <main class="main-content" id="mainContent">
+        <header class="top-header">
+            <div class="header-left">
+                <button class="mobile-toggle" id="mobileToggle"><i class="fa-solid fa-bars"></i></button>
+                <div class="header-greeting">
+                    <h2>Account Settings ⚙️</h2>
+                    <p>Manage security sessions, Google integration, and review audit logs.</p>
+                </div>
+            </div>
+        </header>
+
+        <div class="page-body">
+            <div class="security-layout">
+                <!-- Security Settings -->
+                <div class="sc">
+                    <div class="sc-header"><h3><i class="fa-solid fa-shield-halved"></i> Security Controls</h3></div>
+                    <div class="sc-body" style="display:flex;flex-direction:column;gap:16px;">
+                        <div>
+                            <h5 style="font-size:0.88rem;font-weight:600;margin-bottom:4px;">Google Integration</h5>
+                            <p style="font-size:0.78rem;color:var(--text-secondary);margin-bottom:8px;">Your account is successfully linked to Google. You can sign in using one click.</p>
+                            <button class="btn btn-outline btn-sm" style="font-size:0.78rem;min-height:36px;"><i class="fa-brands fa-google"></i> Disconnect Google</button>
+                        </div>
+                        <hr style="border:none;border-top:1px solid var(--border-color);">
+                        <div>
+                            <h5 style="font-size:0.88rem;font-weight:600;margin-bottom:4px;">Two-Factor Authentication</h5>
+                            <p style="font-size:0.78rem;color:var(--text-secondary);margin-bottom:8px;">Add an extra layer of security to your healthcare data.</p>
+                            <button class="btn btn-primary btn-sm" style="font-size:0.78rem;min-height:36px;"><i class="fa-solid fa-key"></i> Enable 2FA</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Audit logs -->
+                <div class="sc">
+                    <div class="sc-header"><h3><i class="fa-solid fa-list-check"></i> Security Audit Log</h3></div>
+                    <div class="sc-body" id="auditLogContainer">
+                        <div class="audit-item"><div class="audit-info"><h5>User Sign In</h5><p>Google OAuth Authentication</p></div><span class="audit-time">Just Now</span></div>
+                        <div class="audit-item"><div class="audit-info"><h5>MongoDB Atlas Connect</h5><p>Success</p></div><span class="audit-time">5 mins ago</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const mobileToggle = document.getElementById('mobileToggle');
+            const mainContent = document.getElementById('mainContent');
+            if (sidebarToggle) sidebarToggle.addEventListener('click', () => { sidebar.classList.toggle('collapsed'); mainContent.classList.toggle('expanded'); });
+            if (mobileToggle) mobileToggle.addEventListener('click', () => sidebar.classList.toggle('mobile-open'));
+        });
+    </script>
+</body>
+</html>

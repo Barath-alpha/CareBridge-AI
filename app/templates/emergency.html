@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emergency - CareBridge AI</title>
+    <meta name="description" content="Emergency contacts, SOS button, and urgent care information.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <style>
+        .page-body { padding: 28px; display: flex; flex-direction: column; gap: 24px; }
+        .ec { background: #fff; border-radius: 16px; box-shadow: var(--shadow); }
+        .ec-header { padding: 18px 22px 0; display: flex; align-items: center; justify-content: space-between; }
+        .ec-header h3 { font-size: 0.95rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+        .ec-header h3 i { color: #ef4444; }
+        .ec-body { padding: 18px 22px 22px; }
+        .emerg-layout { display: grid; grid-template-columns: 1fr 320px; gap: 20px; }
+
+        /* SOS Banner */
+        .sos-banner {
+            background: linear-gradient(135deg, #7f1d1d, #dc2626, #ef4444);
+            border-radius: 20px; padding: 32px; color: #fff;
+            display: flex; align-items: center; justify-content: space-between; gap: 24px;
+        }
+        .sos-banner h1 { font-size: 1.8rem; font-weight: 800; margin-bottom: 8px; }
+        .sos-banner p { font-size: 0.9rem; opacity: 0.9; margin-bottom: 20px; }
+        .sos-btn {
+            width: 120px; height: 120px; border-radius: 50%;
+            background: #fff; color: #dc2626; border: 4px solid rgba(255,255,255,0.4);
+            font-size: 1rem; font-weight: 800; cursor: pointer;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+            transition: transform 0.15s, box-shadow 0.2s; flex-shrink: 0;
+            animation: sosPulse 2.5s infinite;
+        }
+        .sos-btn i { font-size: 2rem; }
+        .sos-btn:hover { transform: scale(1.06); box-shadow: 0 0 0 12px rgba(255,255,255,0.15); }
+        .sos-btn:active { transform: scale(0.96); }
+        @keyframes sosPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.3); }
+            50% { box-shadow: 0 0 0 16px rgba(255,255,255,0); }
+        }
+        .sos-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+        .sos-action-btn {
+            display: flex; align-items: center; gap: 8px;
+            padding: 10px 18px; border-radius: 10px; font-size: 0.85rem; font-weight: 600;
+            cursor: pointer; border: 2px solid rgba(255,255,255,0.4); background: rgba(255,255,255,0.15);
+            color: #fff; transition: all 0.2s; font-family: 'Poppins', sans-serif;
+        }
+        .sos-action-btn:hover { background: rgba(255,255,255,0.3); }
+
+        /* Emergency contacts */
+        .contact-card {
+            display: flex; align-items: center; gap: 16px; padding: 18px;
+            border: 1px solid var(--border-color); border-radius: 14px; margin-bottom: 12px;
+            transition: all 0.2s;
+        }
+        .contact-card:last-child { margin-bottom: 0; }
+        .contact-card:hover { border-color: #ef4444; box-shadow: 0 4px 12px rgba(239,68,68,0.08); }
+        .contact-avatar { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: 700; color: #fff; flex-shrink: 0; }
+        .contact-info { flex: 1; }
+        .contact-info h4 { font-size: 0.95rem; font-weight: 600; margin-bottom: 3px; }
+        .contact-info p { font-size: 0.78rem; color: var(--text-secondary); }
+        .contact-info .phone { font-size: 0.9rem; font-weight: 600; color: var(--text-primary); margin-top: 2px; }
+        .call-btn { padding: 9px 18px; background: #16a34a; color: #fff; border: none; border-radius: 10px; font-weight: 600; font-size: 0.83rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: background 0.2s; font-family: 'Poppins', sans-serif; }
+        .call-btn:hover { background: #15803d; }
+
+        /* Warning signs */
+        .warning-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .warning-item {
+            display: flex; align-items: flex-start; gap: 10px; padding: 13px;
+            background: #fff5f5; border-radius: 10px; border-left: 3px solid #ef4444;
+        }
+        .warning-item i { color: #dc2626; font-size: 0.9rem; margin-top: 2px; flex-shrink: 0; }
+        .warning-item p { font-size: 0.8rem; color: #7f1d1d; font-weight: 500; }
+
+        /* Nearby hospitals */
+        .hospital-item { display: flex; gap: 12px; padding: 13px; background: var(--body-bg); border-radius: 12px; margin-bottom: 8px; }
+        .hospital-item:last-child { margin-bottom: 0; }
+        .hospital-item i { color: #ef4444; font-size: 1rem; margin-top: 2px; flex-shrink: 0; }
+        .hospital-item h5 { font-size: 0.85rem; font-weight: 600; margin-bottom: 2px; }
+        .hospital-item p { font-size: 0.75rem; color: var(--text-secondary); }
+
+        @media (max-width: 1000px) { .emerg-layout { grid-template-columns: 1fr; } }
+        @media (max-width: 600px) { .warning-grid { grid-template-columns: 1fr; } .sos-banner { flex-direction: column; } }
+    </style>
+</head>
+<body>
+    {% set active_page = 'emergency' %}
+    {% include '_sidebar.html' %}
+
+    <main class="main-content" id="mainContent">
+        <header class="top-header">
+            <div class="header-left">
+                <button class="mobile-toggle" id="mobileToggle"><i class="fa-solid fa-bars"></i></button>
+                <div class="header-greeting">
+                    <h2 style="color:#dc2626;"><i class="fa-solid fa-truck-medical" style="margin-right:8px;"></i>Emergency</h2>
+                    <p>Quick access to emergency contacts and urgent care information.</p>
+                </div>
+            </div>
+        </header>
+
+        <div class="page-body">
+            <!-- SOS Banner -->
+            <div class="sos-banner">
+                <div>
+                    <h1>🚨 Emergency Access</h1>
+                    <p>If you are experiencing a medical emergency, press the SOS button or call emergency services immediately.</p>
+                    <div class="sos-actions">
+                        <button class="sos-action-btn" onclick="window.location='tel:108'"><i class="fa-solid fa-phone"></i> Call 108 (Ambulance)</button>
+                        <button class="sos-action-btn" onclick="window.location='tel:112'"><i class="fa-solid fa-shield-halved"></i> Call 112 (Police)</button>
+                    </div>
+                </div>
+                <button class="sos-btn" id="sosBtn" onclick="handleSOS()">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <span>SOS</span>
+                </button>
+            </div>
+
+            <div class="emerg-layout">
+                <div style="display:flex;flex-direction:column;gap:20px;">
+                    <!-- Emergency Contacts -->
+                    <div class="ec">
+                        <div class="ec-header"><h3><i class="fa-solid fa-address-book"></i> Emergency Contacts</h3>
+                            <button class="btn btn-outline btn-sm" style="font-size:0.78rem;"><i class="fa-solid fa-plus"></i> Add</button>
+                        </div>
+                        <div class="ec-body">
+                            <div class="contact-card">
+                                <div class="contact-avatar" style="background:linear-gradient(135deg,#2563eb,#7c3aed);">A</div>
+                                <div class="contact-info">
+                                    <h4>Ananya — Wife</h4>
+                                    <p>Primary Emergency Contact</p>
+                                    <div class="phone"><i class="fa-solid fa-phone" style="font-size:0.75rem;"></i> +91 98765 43210</div>
+                                </div>
+                                <button class="call-btn" onclick="window.location='tel:+919876543210'"><i class="fa-solid fa-phone"></i> Call</button>
+                            </div>
+                            <div class="contact-card">
+                                <div class="contact-avatar" style="background:linear-gradient(135deg,#10b981,#0891b2);">R</div>
+                                <div class="contact-info">
+                                    <h4>Ravi — Son</h4>
+                                    <p>Secondary Contact</p>
+                                    <div class="phone"><i class="fa-solid fa-phone" style="font-size:0.75rem;"></i> +91 87654 32109</div>
+                                </div>
+                                <button class="call-btn" onclick="window.location='tel:+918765432109'"><i class="fa-solid fa-phone"></i> Call</button>
+                            </div>
+                            <div class="contact-card">
+                                <div class="contact-avatar" style="background:linear-gradient(135deg,#2563eb,#0891b2);">Dr</div>
+                                <div class="contact-info">
+                                    <h4>Dr. Sarah Johnson</h4>
+                                    <p>Cardiologist — City Heart Clinic</p>
+                                    <div class="phone"><i class="fa-solid fa-phone" style="font-size:0.75rem;"></i> +91 44-2222-3333</div>
+                                </div>
+                                <button class="call-btn" onclick="window.location='tel:+914422223333'"><i class="fa-solid fa-phone"></i> Call</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Warning signs -->
+                    <div class="ec">
+                        <div class="ec-header"><h3><i class="fa-solid fa-triangle-exclamation"></i> When to Call Emergency</h3></div>
+                        <div class="ec-body">
+                            <p style="font-size:0.83rem;color:var(--text-secondary);margin-bottom:14px;">Call 108 or go to the nearest emergency room immediately if you experience:</p>
+                            <div class="warning-grid">
+                                <div class="warning-item"><i class="fa-solid fa-circle-exclamation"></i><p>Severe chest pain or pressure</p></div>
+                                <div class="warning-item"><i class="fa-solid fa-circle-exclamation"></i><p>Difficulty breathing or shortness of breath</p></div>
+                                <div class="warning-item"><i class="fa-solid fa-circle-exclamation"></i><p>Sudden severe dizziness or fainting</p></div>
+                                <div class="warning-item"><i class="fa-solid fa-circle-exclamation"></i><p>Rapid or irregular heartbeat</p></div>
+                                <div class="warning-item"><i class="fa-solid fa-circle-exclamation"></i><p>Swelling in legs, ankles, or feet</p></div>
+                                <div class="warning-item"><i class="fa-solid fa-circle-exclamation"></i><p>Signs of stroke (slurred speech, facial drooping)</p></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display:flex;flex-direction:column;gap:20px;">
+                    <!-- Quick dial -->
+                    <div class="ec">
+                        <div class="ec-header"><h3><i class="fa-solid fa-phone-volume"></i> Quick Dial</h3></div>
+                        <div class="ec-body">
+                            <div style="display:flex;flex-direction:column;gap:10px;">
+                                <a href="tel:108" style="display:flex;align-items:center;gap:12px;padding:14px;background:#fee2e2;border-radius:12px;text-decoration:none;transition:all 0.2s;" onmouseover="this.style.background='#fecaca'" onmouseout="this.style.background='#fee2e2'">
+                                    <div style="width:44px;height:44px;background:#dc2626;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1rem;"><i class="fa-solid fa-truck-medical"></i></div>
+                                    <div><p style="font-size:0.9rem;font-weight:700;color:#7f1d1d;">108 — Ambulance</p><p style="font-size:0.75rem;color:#b91c1c;">24/7 Medical Emergency</p></div>
+                                </a>
+                                <a href="tel:112" style="display:flex;align-items:center;gap:12px;padding:14px;background:#eff6ff;border-radius:12px;text-decoration:none;transition:all 0.2s;">
+                                    <div style="width:44px;height:44px;background:#2563eb;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1rem;"><i class="fa-solid fa-shield-halved"></i></div>
+                                    <div><p style="font-size:0.9rem;font-weight:700;color:#1e3a8a;">112 — Emergency</p><p style="font-size:0.75rem;color:#1d4ed8;">Police / Fire / Medical</p></div>
+                                </a>
+                                <a href="tel:1800114000" style="display:flex;align-items:center;gap:12px;padding:14px;background:#f0fdf4;border-radius:12px;text-decoration:none;transition:all 0.2s;">
+                                    <div style="width:44px;height:44px;background:#16a34a;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1rem;"><i class="fa-solid fa-heart-pulse"></i></div>
+                                    <div><p style="font-size:0.9rem;font-weight:700;color:#14532d;">1800-11-4000</p><p style="font-size:0.75rem;color:#15803d;">Health Helpline (Free)</p></div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Nearby hospitals -->
+                    <div class="ec">
+                        <div class="ec-header"><h3><i class="fa-solid fa-hospital"></i> Nearby Hospitals</h3></div>
+                        <div class="ec-body">
+                            <div class="hospital-item">
+                                <i class="fa-solid fa-hospital"></i>
+                                <div><h5>City Heart Hospital</h5><p>0.8 km · Open 24/7 · +91 44-1111-2222</p></div>
+                            </div>
+                            <div class="hospital-item">
+                                <i class="fa-solid fa-hospital"></i>
+                                <div><h5>Apollo Hospital</h5><p>2.1 km · Open 24/7 · +91 44-2829-3333</p></div>
+                            </div>
+                            <div class="hospital-item">
+                                <i class="fa-solid fa-hospital"></i>
+                                <div><h5>Government General Hospital</h5><p>3.4 km · Open 24/7 · Free Services</p></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const mobileToggle = document.getElementById('mobileToggle');
+            const mainContent = document.getElementById('mainContent');
+            if (sidebarToggle) sidebarToggle.addEventListener('click', () => { sidebar.classList.toggle('collapsed'); mainContent.classList.toggle('expanded'); });
+            if (mobileToggle) mobileToggle.addEventListener('click', () => sidebar.classList.toggle('mobile-open'));
+        });
+
+        function handleSOS() {
+            if (confirm('⚠️ This will alert your emergency contacts and call 108.\n\nAre you having a medical emergency?')) {
+                window.location.href = 'tel:108';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Health Assistant - CareBridge AI</title>
+    <meta name="description" content="Chat with your AI-powered health assistant for recovery guidance, medication info, and more.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/ai_assistant.css') }}">
+</head>
+<body>
+
+    {% set active_page = 'ai' %}
+    {% include '_sidebar.html' %}
+
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+
+        <!-- Top Header -->
+        <header class="top-header">
+            <div class="header-left">
+                <button class="mobile-toggle" id="mobileToggle"><i class="fa-solid fa-bars"></i></button>
+                <div class="header-greeting">
+                    <h2><i class="fa-solid fa-robot" style="color:var(--primary);margin-right:6px;"></i> AI Health Assistant</h2>
+                    <p>Powered by Google Gemini 2.5 Flash — Always here to help.</p>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="ai-status">
+                    <span class="ai-dot"></span> Online
+                </div>
+                <button class="btn btn-outline btn-sm" id="clearChat">
+                    <i class="fa-solid fa-rotate-left"></i> New Chat
+                </button>
+            </div>
+        </header>
+
+        <!-- Chat Layout -->
+        <div class="chat-container">
+
+            <!-- LEFT: Topic Sidebar -->
+            <div class="chat-sidebar">
+                <div>
+                    <h4>Suggested Topics</h4>
+                    <div class="topic-list">
+                        <button class="topic-btn" onclick="askTopic('What medications do I need to take today?')">
+                            <i class="fa-solid fa-pills"></i> Today's Medications
+                        </button>
+                        <button class="topic-btn" onclick="askTopic('What foods should I eat and avoid during my recovery?')">
+                            <i class="fa-solid fa-apple-whole"></i> Diet & Nutrition
+                        </button>
+                        <button class="topic-btn" onclick="askTopic('What exercises are safe for me to do during recovery?')">
+                            <i class="fa-solid fa-dumbbell"></i> Safe Exercises
+                        </button>
+                        <button class="topic-btn" onclick="askTopic('What are the warning signs that I should go to the emergency room?')">
+                            <i class="fa-solid fa-triangle-exclamation"></i> Warning Signs
+                        </button>
+                        <button class="topic-btn" onclick="askTopic('How can I manage my pain at home?')">
+                            <i class="fa-solid fa-face-sad-tear"></i> Pain Management
+                        </button>
+                        <button class="topic-btn" onclick="askTopic('How do I improve my sleep quality during recovery?')">
+                            <i class="fa-solid fa-moon"></i> Better Sleep
+                        </button>
+                        <button class="topic-btn" onclick="askTopic('How can I track my recovery progress effectively?')">
+                            <i class="fa-solid fa-chart-line"></i> Recovery Tracking
+                        </button>
+                        <button class="topic-btn" onclick="askTopic('What should I know about my follow-up appointment?')">
+                            <i class="fa-solid fa-calendar-check"></i> Appointment Prep
+                        </button>
+                    </div>
+                </div>
+
+                <div class="chat-history-section">
+                    <h4>Conversation History</h4>
+                    <div class="history-list" id="historyList">
+                        <p class="history-empty">No previous chats yet.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT: Chat Main -->
+            <div class="chat-main">
+                <div class="chat-messages" id="chatMessages">
+                    <!-- Welcome message injected by JS -->
+                </div>
+
+                <div class="chat-input-area">
+                    <div class="chat-input-wrapper">
+                        <button class="chat-action-btn" title="Voice input (coming soon)">
+                            <i class="fa-solid fa-microphone"></i>
+                        </button>
+                        <textarea id="chatInput" placeholder="Ask me anything about your recovery, medications, diet, or symptoms..." rows="1"></textarea>
+                        <button class="send-btn" id="sendBtn" title="Send message">
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </button>
+                    </div>
+                    <p class="chat-disclaimer">
+                        <i class="fa-solid fa-circle-info"></i>
+                        AI responses are for informational purposes only. Always consult your doctor for medical decisions.
+                    </p>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script src="{{ url_for('static', filename='js/ai_assistant.js') }}"></script>
+</body>
+</html>

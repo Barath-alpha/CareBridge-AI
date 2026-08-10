@@ -1,0 +1,28 @@
+# Python virtual environment
+venv/
+ENV/
+env/
+.venv/
+bin/
+lib/
+include/
+
+# Environment files (contains credentials and secrets)
+.env
+
+# Python compilation cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# IDE configurations
+.vscode/
+.idea/
+
+# Local databases and logs
+app/carebridge_local.json
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db

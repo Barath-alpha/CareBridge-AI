@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Check-In - CareBridge AI</title>
+    <meta name="description" content="Log your daily health check-in including mood, pain, vitals, and symptoms.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <style>
+        .page-body { padding: 28px; display: flex; flex-direction: column; gap: 24px; }
+        .checkin-layout { display: grid; grid-template-columns: 1fr 340px; gap: 20px; }
+        .cc { background: #fff; border-radius: 16px; box-shadow: var(--shadow); }
+        .cc-header { padding: 20px 24px 0; display: flex; align-items: center; justify-content: space-between; }
+        .cc-header h3 { font-size: 0.95rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+        .cc-header h3 i { color: var(--primary); }
+        .cc-body { padding: 20px 24px 24px; }
+
+        .page-hero {
+            background: linear-gradient(135deg, #0891b2, #0e7490, #06b6d4);
+            border-radius: 20px; padding: 26px 32px; color: #fff;
+            display: flex; align-items: center; gap: 24px;
+        }
+        .page-hero i.big { font-size: 2.5rem; opacity: 0.9; }
+        .page-hero h1 { font-size: 1.5rem; font-weight: 800; margin-bottom: 4px; }
+        .page-hero p { font-size: 0.875rem; opacity: 0.88; }
+
+        /* Form sections */
+        .form-section { margin-bottom: 24px; }
+        .form-section:last-child { margin-bottom: 0; }
+        .form-section label { font-size: 0.875rem; font-weight: 600; color: var(--text-primary); margin-bottom: 12px; display: block; }
+        .form-section label span { font-size: 0.78rem; font-weight: 400; color: var(--text-secondary); }
+
+        /* Pain scale */
+        .pain-scale-full { display: flex; gap: 8px; flex-wrap: wrap; }
+        .pain-btn-lg {
+            width: 46px; height: 46px; border-radius: 10px;
+            border: 2px solid var(--border-color); background: transparent;
+            font-size: 0.9rem; font-weight: 700; cursor: pointer;
+            transition: all 0.2s; color: var(--text-secondary); font-family: 'Poppins', sans-serif;
+        }
+        .pain-btn-lg:hover { border-color: var(--primary); color: var(--primary); }
+        .pain-btn-lg.selected { background: var(--primary); border-color: var(--primary); color: #fff; transform: scale(1.1); }
+        .pain-labels { display: flex; justify-content: space-between; margin-top: 6px; font-size: 0.72rem; color: var(--text-secondary); }
+
+        /* Mood selector */
+        .mood-row-full { display: flex; gap: 14px; flex-wrap: wrap; }
+        .mood-btn-lg {
+            display: flex; flex-direction: column; align-items: center; gap: 6px;
+            padding: 12px 16px; border: 2px solid var(--border-color); border-radius: 14px;
+            background: transparent; cursor: pointer; transition: all 0.2s; font-family: 'Poppins', sans-serif;
+            min-width: 70px;
+        }
+        .mood-btn-lg .emoji { font-size: 1.8rem; }
+        .mood-btn-lg .lbl { font-size: 0.72rem; color: var(--text-secondary); font-weight: 500; }
+        .mood-btn-lg:hover { border-color: var(--primary); background: var(--primary-light); }
+        .mood-btn-lg.selected { border-color: var(--primary); background: var(--primary-light); transform: scale(1.05); }
+        .mood-btn-lg.selected .lbl { color: var(--primary); }
+
+        /* Symptoms */
+        .symptom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .symptom-chip {
+            display: flex; align-items: center; gap: 10px;
+            padding: 11px 14px; background: var(--body-bg);
+            border: 2px solid transparent; border-radius: 10px; cursor: pointer;
+            font-size: 0.82rem; font-weight: 500; color: var(--text-secondary);
+            transition: all 0.2s; text-align: left; font-family: 'Poppins', sans-serif;
+        }
+        .symptom-chip:hover { border-color: var(--border-color); }
+        .symptom-chip.selected { border-color: #dc2626; background: #fff5f5; color: #dc2626; }
+        .symptom-chip.selected i { color: #dc2626; }
+        .symptom-chip i { color: var(--text-secondary); font-size: 0.9rem; }
+
+        /* Vitals inputs */
+        .vitals-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .vital-input-group { display: flex; flex-direction: column; gap: 6px; }
+        .vital-input-group label { font-size: 0.78rem; font-weight: 500; color: var(--text-secondary); margin-bottom: 0; }
+        .vital-input-group input {
+            padding: 10px 14px; border: 1.5px solid var(--border-color); border-radius: 10px;
+            font-size: 0.9rem; outline: none; font-family: 'Poppins', sans-serif;
+            transition: border-color 0.2s; background: var(--body-bg);
+        }
+        .vital-input-group input:focus { border-color: var(--primary); background: #fff; }
+
+        /* Notes */
+        .notes-area {
+            width: 100%; padding: 12px 14px; border: 1.5px solid var(--border-color);
+            border-radius: 12px; font-size: 0.875rem; outline: none; resize: vertical;
+            font-family: 'Poppins', sans-serif; background: var(--body-bg); transition: border-color 0.2s;
+            min-height: 90px;
+        }
+        .notes-area:focus { border-color: var(--primary); background: #fff; }
+
+        /* History */
+        .history-entry {
+            display: flex; gap: 14px; padding: 14px;
+            background: var(--body-bg); border-radius: 12px; margin-bottom: 10px;
+        }
+        .history-entry:last-child { margin-bottom: 0; }
+        .he-date { font-size: 0.72rem; font-weight: 600; color: var(--text-secondary); min-width: 50px; }
+        .he-content { flex: 1; }
+        .he-content p { font-size: 0.82rem; color: var(--text-secondary); margin-top: 4px; }
+        .he-mood { font-size: 1.2rem; }
+
+        @media (max-width: 1000px) { .checkin-layout { grid-template-columns: 1fr; } }
+        @media (max-width: 600px) { .symptom-grid { grid-template-columns: 1fr; } .vitals-inputs { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    {% set active_page = 'checkin' %}
+    {% include '_sidebar.html' %}
+
+    <main class="main-content" id="mainContent">
+        <header class="top-header">
+            <div class="header-left">
+                <button class="mobile-toggle" id="mobileToggle"><i class="fa-solid fa-bars"></i></button>
+                <div class="header-greeting">
+                    <h2>Daily Check-In 📝</h2>
+                    <p>Log your health status for today to track your recovery.</p>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="header-date"><i class="fa-regular fa-calendar"></i><span id="currentDate"></span></div>
+            </div>
+        </header>
+
+        <div class="page-body">
+            <div class="page-hero">
+                <i class="fa-solid fa-clipboard-list big"></i>
+                <div>
+                    <h1>How are you feeling today?</h1>
+                    <p>Completing your daily check-in helps your care team monitor your recovery progress effectively.</p>
+                </div>
+                <div style="margin-left:auto;flex-shrink:0;background:rgba(255,255,255,0.18);padding:12px 20px;border-radius:12px;text-align:center;">
+                    <div style="font-size:1.5rem;font-weight:800;line-height:1;">12</div>
+                    <div style="font-size:0.72rem;opacity:0.85;margin-top:2px;">Day Streak</div>
+                </div>
+            </div>
+
+            <div class="checkin-layout">
+                <!-- Left: Form -->
+                <div class="cc">
+                    <div class="cc-header"><h3><i class="fa-solid fa-pen-to-square"></i> Today's Check-In Form</h3></div>
+                    <div class="cc-body">
+
+                        <!-- Pain -->
+                        <div class="form-section">
+                            <label>Pain Level <span>(Select 1 = no pain, 10 = severe pain)</span></label>
+                            <div class="pain-scale-full" id="painScale">
+                                <button class="pain-btn-lg" data-value="1">1</button>
+                                <button class="pain-btn-lg" data-value="2">2</button>
+                                <button class="pain-btn-lg" data-value="3">3</button>
+                                <button class="pain-btn-lg" data-value="4">4</button>
+                                <button class="pain-btn-lg" data-value="5">5</button>
+                                <button class="pain-btn-lg" data-value="6">6</button>
+                                <button class="pain-btn-lg" data-value="7">7</button>
+                                <button class="pain-btn-lg" data-value="8">8</button>
+                                <button class="pain-btn-lg" data-value="9">9</button>
+                                <button class="pain-btn-lg" data-value="10">10</button>
+                            </div>
+                            <div class="pain-labels"><span>No pain</span><span>Moderate</span><span>Severe</span></div>
+                        </div>
+
+                        <!-- Mood -->
+                        <div class="form-section">
+                            <label>Overall Mood</label>
+                            <div class="mood-row-full" id="moodSelector">
+                                <button class="mood-btn-lg" data-mood="great"><span class="emoji">😄</span><span class="lbl">Great</span></button>
+                                <button class="mood-btn-lg" data-mood="good"><span class="emoji">🙂</span><span class="lbl">Good</span></button>
+                                <button class="mood-btn-lg" data-mood="okay"><span class="emoji">😐</span><span class="lbl">Okay</span></button>
+                                <button class="mood-btn-lg" data-mood="bad"><span class="emoji">😕</span><span class="lbl">Not well</span></button>
+                                <button class="mood-btn-lg" data-mood="terrible"><span class="emoji">😢</span><span class="lbl">Terrible</span></button>
+                            </div>
+                        </div>
+
+                        <!-- Symptoms -->
+                        <div class="form-section">
+                            <label>Symptoms <span>(select all that apply)</span></label>
+                            <div class="symptom-grid" id="symptomGrid">
+                                <button class="symptom-chip" data-sym="dizziness"><i class="fa-solid fa-dizzy"></i> Dizziness</button>
+                                <button class="symptom-chip" data-sym="nausea"><i class="fa-solid fa-face-nauseated"></i> Nausea</button>
+                                <button class="symptom-chip" data-sym="fatigue"><i class="fa-solid fa-battery-quarter"></i> Fatigue</button>
+                                <button class="symptom-chip" data-sym="breathlessness"><i class="fa-solid fa-lungs"></i> Breathlessness</button>
+                                <button class="symptom-chip" data-sym="chest_pain"><i class="fa-solid fa-heart-crack"></i> Chest Pain</button>
+                                <button class="symptom-chip" data-sym="swelling"><i class="fa-solid fa-hand-dots"></i> Swelling</button>
+                                <button class="symptom-chip" data-sym="headache"><i class="fa-solid fa-head-side-virus"></i> Headache</button>
+                                <button class="symptom-chip" data-sym="fever"><i class="fa-solid fa-temperature-high"></i> Fever</button>
+                            </div>
+                        </div>
+
+                        <!-- Vitals -->
+                        <div class="form-section">
+                            <label>Today's Vitals <span>(optional)</span></label>
+                            <div class="vitals-inputs">
+                                <div class="vital-input-group">
+                                    <label>Blood Pressure (mmHg)</label>
+                                    <input type="text" id="bpInput" placeholder="e.g. 120/80">
+                                </div>
+                                <div class="vital-input-group">
+                                    <label>Heart Rate (bpm)</label>
+                                    <input type="number" id="hrInput" placeholder="e.g. 72">
+                                </div>
+                                <div class="vital-input-group">
+                                    <label>Temperature (°F)</label>
+                                    <input type="number" id="tempInput" placeholder="e.g. 98.6" step="0.1">
+                                </div>
+                                <div class="vital-input-group">
+                                    <label>Weight (kg)</label>
+                                    <input type="number" id="weightInput" placeholder="e.g. 70">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Notes -->
+                        <div class="form-section">
+                            <label>Additional Notes <span>(optional)</span></label>
+                            <textarea class="notes-area" id="checkinNotes" placeholder="Describe how you feel today, any unusual symptoms, side effects from medications..."></textarea>
+                        </div>
+
+                        <!-- Submit -->
+                        <button class="btn btn-primary btn-full" id="submitCheckin" style="font-size:0.95rem;padding:14px;">
+                            <i class="fa-solid fa-paper-plane"></i> Submit Today's Check-In
+                        </button>
+                        <p style="font-size:0.75rem;color:var(--text-secondary);text-align:center;margin-top:10px;">
+                            <i class="fa-solid fa-shield-halved"></i> Your health data is private and secure.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Right: History -->
+                <div style="display:flex;flex-direction:column;gap:20px;">
+                    <div class="cc">
+                        <div class="cc-header"><h3><i class="fa-solid fa-clock-rotate-left"></i> Recent Check-Ins</h3></div>
+                        <div class="cc-body">
+                            <div class="history-entry">
+                                <div class="he-date">Aug 9</div>
+                                <div class="he-content">
+                                    <div style="display:flex;align-items:center;gap:8px;">
+                                        <span class="he-mood">🙂</span>
+                                        <span class="badge badge-success">Good</span>
+                                        <span class="badge badge-secondary">Pain: 2</span>
+                                    </div>
+                                    <p>Felt a little tired in the afternoon. No chest pain.</p>
+                                </div>
+                            </div>
+                            <div class="history-entry">
+                                <div class="he-date">Aug 8</div>
+                                <div class="he-content">
+                                    <div style="display:flex;align-items:center;gap:8px;">
+                                        <span class="he-mood">😄</span>
+                                        <span class="badge badge-success">Great</span>
+                                        <span class="badge badge-secondary">Pain: 1</span>
+                                    </div>
+                                    <p>Went for a 20-min walk. BP: 122/80. Feeling good.</p>
+                                </div>
+                            </div>
+                            <div class="history-entry">
+                                <div class="he-date">Aug 7</div>
+                                <div class="he-content">
+                                    <div style="display:flex;align-items:center;gap:8px;">
+                                        <span class="he-mood">😐</span>
+                                        <span class="badge badge-warning">Okay</span>
+                                        <span class="badge badge-secondary">Pain: 4</span>
+                                    </div>
+                                    <p>Mild headache and some fatigue. Rested most of the day.</p>
+                                </div>
+                            </div>
+                            <div class="history-entry">
+                                <div class="he-date">Aug 6</div>
+                                <div class="he-content">
+                                    <div style="display:flex;align-items:center;gap:8px;">
+                                        <span class="he-mood">🙂</span>
+                                        <span class="badge badge-success">Good</span>
+                                        <span class="badge badge-secondary">Pain: 2</span>
+                                    </div>
+                                    <p>Normal day. Medications taken on time. Good appetite.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="cc">
+                        <div class="cc-header"><h3><i class="fa-solid fa-chart-bar"></i> 7-Day Trend</h3></div>
+                        <div class="cc-body">
+                            <div style="display:flex;flex-direction:column;gap:10px;">
+                                <div style="display:flex;justify-content:space-between;font-size:0.78rem;color:var(--text-secondary);">
+                                    <span>Average Pain</span><span style="font-weight:700;color:var(--text-primary);">2.4 / 10</span>
+                                </div>
+                                <div style="height:7px;background:var(--border-color);border-radius:50px;"><div style="width:24%;height:100%;background:#10b981;border-radius:50px;"></div></div>
+                                <div style="display:flex;justify-content:space-between;font-size:0.78rem;color:var(--text-secondary);">
+                                    <span>Days Checked In</span><span style="font-weight:700;color:var(--text-primary);">7 / 7</span>
+                                </div>
+                                <div style="height:7px;background:var(--border-color);border-radius:50px;"><div style="width:100%;height:100%;background:#22c55e;border-radius:50px;"></div></div>
+                                <div style="display:flex;justify-content:space-between;font-size:0.78rem;color:var(--text-secondary);">
+                                    <span>Mood Average</span><span style="font-weight:700;color:var(--text-primary);">Good 🙂</span>
+                                </div>
+                                <div style="height:7px;background:var(--border-color);border-radius:50px;"><div style="width:72%;height:100%;background:#2563eb;border-radius:50px;"></div></div>
+                            </div>
+                            <div style="margin-top:16px;padding:14px;background:#f0fdf4;border-radius:10px;border-left:3px solid #22c55e;">
+                                <p style="font-size:0.82rem;color:#166534;"><strong>Keep it up!</strong> Your consistent daily check-ins help your doctor monitor your progress accurately.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const dateEl = document.getElementById('currentDate');
+            if (dateEl) dateEl.textContent = new Date().toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const mobileToggle = document.getElementById('mobileToggle');
+            const mainContent = document.getElementById('mainContent');
+            if (sidebarToggle) sidebarToggle.addEventListener('click', () => { sidebar.classList.toggle('collapsed'); mainContent.classList.toggle('expanded'); });
+            if (mobileToggle) mobileToggle.addEventListener('click', () => sidebar.classList.toggle('mobile-open'));
+
+            // Pain scale
+            document.querySelectorAll('.pain-btn-lg').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.pain-btn-lg').forEach(b => b.classList.remove('selected'));
+                    btn.classList.add('selected');
+                });
+            });
+
+            // Mood
+            document.querySelectorAll('.mood-btn-lg').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.mood-btn-lg').forEach(b => b.classList.remove('selected'));
+                    btn.classList.add('selected');
+                });
+            });
+
+            // Symptoms
+            document.querySelectorAll('.symptom-chip').forEach(chip => {
+                chip.addEventListener('click', () => chip.classList.toggle('selected'));
+            });
+
+            // Submit
+            const submitBtn = document.getElementById('submitCheckin');
+            if (submitBtn) {
+                submitBtn.addEventListener('click', async () => {
+                    const painBtn = document.querySelector('.pain-btn-lg.selected');
+                    const moodBtn = document.querySelector('.mood-btn-lg.selected');
+                    if (!painBtn || !moodBtn) {
+                        alert('Please select your pain level and mood before submitting.');
+                        return;
+                    }
+
+                    const painVal = parseInt(painBtn.textContent.trim());
+                    const moodVal = moodBtn.querySelector('.lbl').textContent.trim().toLowerCase();
+                    const tempVal = parseFloat(document.getElementById('tempInput').value) || 98.6;
+                    const notesVal = document.getElementById('checkinNotes').value;
+
+                    // Collect selected symptom keys
+                    const symptomsList = [];
+                    document.querySelectorAll('.symptom-chip.selected').forEach(chip => {
+                        const symptomKey = chip.textContent.trim().toLowerCase().replace(/\s+/g, '_');
+                        symptomsList.push(symptomKey);
+                    });
+
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting...';
+
+                    try {
+                        const res = await fetch('/api/recovery/checkin', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${localStorage.getItem('access_token') || ''}`
+                            },
+                            body: JSON.stringify({
+                                pain: painVal,
+                                mood: moodVal,
+                                temp: tempVal,
+                                symptoms: symptomsList,
+                                notes: notesVal
+                            })
+                        });
+
+                        if (res.ok) {
+                            const result = await res.json();
+                            if (result.alert_triggered) {
+                                alert("⚠️ Warning criteria triggered! Your care team has been notified immediately. Please rest and follow your recovery plan guidelines.");
+                            }
+                            submitBtn.innerHTML = '<i class="fa-solid fa-circle-check"></i> Check-In Submitted!';
+                            submitBtn.style.background = '#16a34a';
+                        } else {
+                            submitBtn.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Error Submitting';
+                            submitBtn.disabled = false;
+                        }
+                    } catch (err) {
+                        console.error("Submission failed:", err);
+                        submitBtn.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Connection Error';
+                        submitBtn.disabled = false;
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

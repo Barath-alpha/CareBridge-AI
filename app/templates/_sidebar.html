@@ -1,0 +1,145 @@
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+        <a href="/" class="logo"><i class="fa-solid fa-heart-pulse"></i> <span>CareBridge AI</span></a>
+        <button class="sidebar-toggle" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button>
+    </div>
+    <nav class="sidebar-nav">
+        <div class="nav-section">
+            <span class="nav-label">MAIN</span>
+            <a href="/today" class="nav-item {% if active_page == 'today' %}active{% endif %}" id="nav-today">
+                <i class="fa-solid fa-house-chimney-medical"></i> <span>Today View</span>
+            </a>
+            <a href="/dashboard" class="nav-item {% if active_page == 'dashboard' %}active{% endif %}" id="nav-dashboard">
+                <i class="fa-solid fa-gauge-high"></i> <span>Dashboard</span>
+            </a>
+            <a href="/recovery-plan" class="nav-item {% if active_page == 'recovery' %}active{% endif %}" id="nav-recovery">
+                <i class="fa-solid fa-person-walking-luggage"></i> <span>Recovery Plan</span>
+            </a>
+            <a href="/medications" class="nav-item {% if active_page == 'medications' %}active{% endif %}" id="nav-medications">
+                <i class="fa-solid fa-pills"></i> <span>Medications</span>
+            </a>
+            <a href="/appointments" class="nav-item {% if active_page == 'appointments' %}active{% endif %}" id="nav-appointments">
+                <i class="fa-solid fa-calendar-check"></i> <span>Appointments</span>
+            </a>
+            <a href="/daily-checkin" class="nav-item {% if active_page == 'checkin' %}active{% endif %}" id="nav-checkin">
+                <i class="fa-solid fa-clipboard-list"></i> <span>Daily Check-In</span>
+            </a>
+            <a href="/ai-assistant" class="nav-item {% if active_page == 'ai' %}active{% endif %}" id="nav-ai">
+                <i class="fa-solid fa-robot"></i> <span>AI Assistant</span>
+            </a>
+        </div>
+        
+        <!-- Clinician Portals (Hidden by default, shown via script below for doctors/coordinators) -->
+        <div class="nav-section" id="section-clinician" style="display:none;">
+            <span class="nav-label">CLINICAL CONTROL</span>
+            <a href="/clinician" class="nav-item {% if active_page == 'clinician' %}active{% endif %}" id="nav-clinician">
+                <i class="fa-solid fa-user-doctor"></i> <span>Clinician Center</span>
+            </a>
+            <a href="/analytics" class="nav-item {% if active_page == 'analytics' %}active{% endif %}" id="nav-analytics">
+                <i class="fa-solid fa-chart-line"></i> <span>Hospital Analytics</span>
+            </a>
+        </div>
+
+        <div class="nav-section">
+            <span class="nav-label">HEALTH</span>
+            <a href="/upload-summary" class="nav-item {% if active_page == 'upload' %}active{% endif %}" id="nav-upload">
+                <i class="fa-solid fa-file-medical"></i> <span>Upload Summary</span>
+            </a>
+            <a href="/vault" class="nav-item {% if active_page == 'vault' %}active{% endif %}" id="nav-vault">
+                <i class="fa-solid fa-vault"></i> <span>Document Vault</span>
+            </a>
+            <a href="/journal" class="nav-item {% if active_page == 'journal' %}active{% endif %}" id="nav-journal">
+                <i class="fa-solid fa-book-medical"></i> <span>Recovery Journal</span>
+            </a>
+            <a href="/reports" class="nav-item {% if active_page == 'reports' %}active{% endif %}" id="nav-reports">
+                <i class="fa-solid fa-chart-bar"></i> <span>Reports</span>
+            </a>
+            <a href="/family-portal" class="nav-item {% if active_page == 'family' %}active{% endif %}" id="nav-family">
+                <i class="fa-solid fa-people-group"></i> <span>Family Portal</span>
+            </a>
+            <a href="/emergency" class="nav-item nav-emergency {% if active_page == 'emergency' %}active{% endif %}" id="nav-emergency">
+                <i class="fa-solid fa-truck-medical"></i> <span>Emergency</span>
+            </a>
+        </div>
+        <div class="nav-section">
+            <span class="nav-label">ACCOUNT</span>
+            <a href="/settings" class="nav-item {% if active_page == 'settings' %}active{% endif %}" id="nav-settings">
+                <i class="fa-solid fa-gear"></i> <span>Settings</span>
+            </a>
+            <a href="/login" class="nav-item nav-logout" id="nav-logout">
+                <i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span>
+            </a>
+            <div style="padding: 10px 20px 4px;">
+                <span class="nav-label" style="padding: 0; margin-bottom: 6px; display: block; font-size: 0.6rem;">ROLE (DEMO SWITCHER)</span>
+                <select id="demoRoleSelect" style="width:100%;padding:8px;background:#1e293b;color:#f1f5f9;border:1px solid rgba(255,255,255,0.15);border-radius:8px;font-size:0.75rem;outline:none;" onchange="switchDemoRole(this.value)">
+                    <option value="patient">Patient</option>
+                    <option value="doctor">Doctor</option>
+                    <option value="care_coordinator">Care Coordinator</option>
+                    <option value="admin">Administrator</option>
+                </select>
+            </div>
+        </div>
+    </nav>
+</aside>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const logoutBtn = document.getElementById('nav-logout');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('user');
+            window.location.href = '/login';
+        });
+    }
+    
+    // Auth Guard: redirect unauthenticated users to login page
+    const token = localStorage.getItem('access_token');
+    const isAuthPath = window.location.pathname.includes('/login') || window.location.pathname.includes('/signup');
+    if (!token && !isAuthPath && window.location.pathname !== '/') {
+        window.location.href = '/login';
+    }
+
+    // Role-based navigation visibility
+    try {
+        const userObj = JSON.parse(localStorage.getItem('user') || '{}');
+        const role = userObj.role || 'patient';
+        
+        const demoSelect = document.getElementById('demoRoleSelect');
+        if (demoSelect) {
+            demoSelect.value = role;
+        }
+
+        if (['doctor', 'care_coordinator', 'admin'].includes(role)) {
+            const clinicianSection = document.getElementById('section-clinician');
+            if (clinicianSection) {
+                clinicianSection.style.display = 'block';
+            }
+        }
+    } catch(e) {
+        console.error("Error reading user role from localStorage:", e);
+    }
+});
+
+window.switchDemoRole = (newRole) => {
+    try {
+        const userObj = JSON.parse(localStorage.getItem('user') || '{}');
+        userObj.role = newRole;
+        localStorage.setItem('user', JSON.stringify(userObj));
+        // Redirect to /dashboard if patient or /clinician if doctor or /analytics if admin
+        if (newRole === 'patient') {
+            window.location.href = '/today';
+        } else if (['doctor', 'care_coordinator'].includes(newRole)) {
+            window.location.href = '/clinician';
+        } else if (newRole === 'admin') {
+            window.location.href = '/analytics';
+        } else {
+            window.location.reload();
+        }
+    } catch(e) {
+        window.location.reload();
+    }
+};
+</script>
+

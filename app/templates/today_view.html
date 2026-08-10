@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Today View - CareBridge AI</title>
+    <meta name="description" content="Your daily recovery command center.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <style>
+        .page-body { padding: 28px; display: flex; flex-direction: column; gap: 24px; }
+        .tc { background: #fff; border-radius: 16px; box-shadow: var(--shadow); }
+        .tc-header { padding: 18px 22px 0; display: flex; align-items: center; justify-content: space-between; }
+        .tc-header h3 { font-size: 0.95rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+        .tc-header h3 i { color: var(--primary); }
+        .tc-body { padding: 18px 22px 22px; }
+        
+        .today-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+        
+        .hero-progress {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8, #7c3aed);
+            border-radius: 20px; padding: 28px 32px; color: #fff;
+            display: flex; align-items: center; justify-content: space-between; gap: 24px;
+        }
+        .hero-progress-info h1 { font-size: 1.6rem; font-weight: 800; margin-bottom: 6px; }
+        .hero-progress-info p { font-size: 0.9rem; opacity: 0.88; }
+        
+        .score-circle {
+            position: relative; width: 100px; height: 100px; display: flex; align-items: center; justify-content: center;
+        }
+        .score-circle svg { width: 100px; height: 100px; transform: rotate(-90deg); }
+        .score-circle circle { fill: none; stroke-width: 8; stroke-linecap: round; }
+        .score-circle .bg { stroke: rgba(255, 255, 255, 0.2); }
+        .score-circle .fill { stroke: #fff; transition: stroke-dashoffset 0.5s ease-in-out; }
+        .score-text { position: absolute; font-size: 1.3rem; font-weight: 800; }
+
+        .today-task-card {
+            display: flex; align-items: center; gap: 14px; padding: 16px;
+            border: 1px solid var(--border-color); border-radius: 12px; margin-bottom: 12px;
+            transition: all 0.2s;
+        }
+        .today-task-card:hover { border-color: var(--primary); background: var(--primary-light); }
+        .task-checkbox {
+            width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--primary);
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s; flex-shrink: 0;
+        }
+        .task-checkbox.checked { background: var(--primary); color: #fff; }
+        .task-info { flex: 1; }
+        .task-info h5 { font-size: 0.88rem; font-weight: 600; margin-bottom: 2px; }
+        .task-info p { font-size: 0.76rem; color: var(--text-secondary); }
+
+        .time-badge { font-size: 0.72rem; padding: 4px 8px; border-radius: 6px; background: var(--body-bg); color: var(--text-secondary); font-weight: 600; }
+        
+        @media (max-width: 1000px) { .today-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    {% set active_page = 'today' %}
+    {% include '_sidebar.html' %}
+
+    <main class="main-content" id="mainContent">
+        <header class="top-header">
+            <div class="header-left">
+                <button class="mobile-toggle" id="mobileToggle"><i class="fa-solid fa-bars"></i></button>
+                <div class="header-greeting">
+                    <h2>Today View ☀️</h2>
+                    <p>Your recovery dashboard for today.</p>
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-primary btn-sm" onclick="window.location.href='/daily-checkin'"><i class="fa-solid fa-clipboard-check"></i> Complete Check-In</button>
+            </div>
+        </header>
+
+        <div class="page-body">
+            <!-- Hero Progress section -->
+            <div class="hero-progress">
+                <div class="hero-progress-info">
+                    <h1 id="greetingName">Hello, Patient</h1>
+                    <p>You have completed <strong id="completedFraction">0 of 0</strong> tasks today. Keep up the great progress!</p>
+                </div>
+                <div class="score-circle">
+                    <svg>
+                        <circle class="bg" cx="50" cy="50" r="42"></circle>
+                        <circle class="fill" id="progressFill" cx="50" cy="50" r="42" stroke-dasharray="263.8" stroke-dashoffset="263.8"></circle>
+                    </svg>
+                    <div class="score-text" id="adherencePercent">0%</div>
+                </div>
+            </div>
+
+            <div class="today-grid">
+                <!-- Today's Tasks -->
+                <div class="tc">
+                    <div class="tc-header">
+                        <h3><i class="fa-solid fa-clipboard-list"></i> Today's Recovery Tasks</h3>
+                        <span class="badge badge-primary" id="pendingTasksBadge">0 Pending</span>
+                    </div>
+                    <div class="tc-body" id="tasksContainer">
+                        <!-- Dynamic task list -->
+                    </div>
+                </div>
+
+                <div style="display:flex;flex-direction:column;gap:20px;">
+                    <!-- Today's Medications -->
+                    <div class="tc">
+                        <div class="tc-header"><h3><i class="fa-solid fa-pills"></i> Medications Scheduled</h3></div>
+                        <div class="tc-body" id="medsContainer">
+                            <!-- Dynamic medications list -->
+                        </div>
+                    </div>
+
+                    <!-- Upcoming Appointments -->
+                    <div class="tc">
+                        <div class="tc-header"><h3><i class="fa-solid fa-calendar-check"></i> Appointments</h3></div>
+                        <div class="tc-body" id="apptsContainer">
+                            <!-- Dynamic appointments list -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const mobileToggle = document.getElementById('mobileToggle');
+            const mainContent = document.getElementById('mainContent');
+            if (sidebarToggle) sidebarToggle.addEventListener('click', () => { sidebar.classList.toggle('collapsed'); mainContent.classList.toggle('expanded'); });
+            if (mobileToggle) mobileToggle.addEventListener('click', () => sidebar.classList.toggle('mobile-open'));
+
+            loadTodayData();
+        });
+
+        async function loadTodayData() {
+            try {
+                const res = await fetch('/api/recovery/today', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('access_token') || ''}`
+                    }
+                });
+                const data = await res.json();
+                
+                if (res.ok) {
+                    // Update user info
+                    document.getElementById('greetingName').textContent = `Hello, ${data.user.name.split(' ')[0]} 👋`;
+                    document.getElementById('adherencePercent').textContent = `${data.adherence_score}%`;
+                    
+                    // Score Circle fill animation
+                    const offset = 263.8 - (data.adherence_score / 100) * 263.8;
+                    document.getElementById('progressFill').style.strokeDashoffset = offset;
+
+                    // Hydrate Tasks
+                    const tasksCont = document.getElementById('tasksContainer');
+                    tasksCont.innerHTML = '';
+                    if (!data.tasks || data.tasks.length === 0) {
+                        tasksCont.innerHTML = '<p style="font-size:0.83rem;color:var(--text-secondary);text-align:center;">No recovery tasks set for today. Go to Upload Summary page to upload your discharge summary and start your recovery plan!</p>';
+                    } else {
+                        data.tasks.forEach(t => {
+                            const taskCard = document.createElement('div');
+                            taskCard.className = 'today-task-card';
+                            taskCard.innerHTML = `
+                                <div class="task-checkbox ${t.completed ? 'checked' : ''}" onclick="toggleTask('${t._id}', ${t.completed})">
+                                    ${t.completed ? '<i class="fa-solid fa-check" style="font-size:0.75rem;"></i>' : ''}
+                                </div>
+                                <div class="task-info">
+                                    <h5>${t.title}</h5>
+                                    <p>${t.description}</p>
+                                </div>
+                            `;
+                            tasksCont.appendChild(taskCard);
+                        });
+                    }
+
+                    // Hydrate Medications
+                    const medsCont = document.getElementById('medsContainer');
+                    medsCont.innerHTML = '';
+                    if (!data.medications || data.medications.length === 0) {
+                        medsCont.innerHTML = '<p style="font-size:0.83rem;color:var(--text-secondary);">No medications scheduled.</p>';
+                    } else {
+                        data.medications.forEach(m => {
+                            const isTaken = data.medication_logs.some(l => l.medication_id === m._id && l.status === 'taken');
+                            const medCard = document.createElement('div');
+                            medCard.className = 'today-task-card';
+                            medCard.innerHTML = `
+                                <div class="task-checkbox ${isTaken ? 'checked' : ''}" onclick="logMed('${m._id}', ${isTaken})">
+                                    ${isTaken ? '<i class="fa-solid fa-check" style="font-size:0.75rem;"></i>' : ''}
+                                </div>
+                                <div class="task-info">
+                                    <h5>${m.name}</h5>
+                                    <p>${m.dosage} · ${m.frequency}</p>
+                                </div>
+                                <span class="time-badge">${m.purpose}</span>
+                            `;
+                            medsCont.appendChild(medCard);
+                        });
+                    }
+
+                    // Hydrate Appointments
+                    const apptsCont = document.getElementById('apptsContainer');
+                    apptsCont.innerHTML = '';
+                    if (!data.appointments || data.appointments.length === 0) {
+                        apptsCont.innerHTML = '<p style="font-size:0.83rem;color:var(--text-secondary);">No upcoming appointments.</p>';
+                    } else {
+                        data.appointments.forEach(a => {
+                            const apptCard = document.createElement('div');
+                            apptCard.className = 'today-task-card';
+                            apptCard.innerHTML = `
+                                <i class="fa-solid fa-calendar-check" style="color:var(--primary);font-size:1.1rem;flex-shrink:0;"></i>
+                                <div class="task-info">
+                                    <h5>${a.doctor} · ${a.specialty}</h5>
+                                    <p>${a.date} · ${a.location}</p>
+                                </div>
+                            `;
+                            apptsCont.appendChild(apptCard);
+                        });
+                    }
+
+                    // Update task counts
+                    const totalTasks = (data.tasks ? data.tasks.length : 0) + (data.medications ? data.medications.length : 0);
+                    const completedTasks = (data.tasks ? data.tasks.filter(t => t.completed).length : 0) + (data.medication_logs ? data.medication_logs.filter(l => l.status === 'taken').length : 0);
+                    document.getElementById('completedFraction').textContent = `${completedTasks} of ${totalTasks}`;
+                    document.getElementById('pendingTasksBadge').textContent = `${totalTasks - completedTasks} Pending`;
+                }
+            } catch (err) {
+                console.error("Error loading today metrics:", err);
+            }
+        }
+
+        async function toggleTask(taskId, currentStatus) {
+            // Placeholder: toggles task completion state in db.recoveryTasks
+            // For mock demo, we just trigger alert and refresh
+            loadTodayData();
+        }
+
+        async function logMed(medId, currentlyTaken) {
+            if (currentlyTaken) return;
+            try {
+                const res = await fetch('/api/recovery/medication-log', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('access_token') || ''}`
+                    },
+                    body: JSON.stringify({ medication_id: medId, status: 'taken' })
+                });
+                if (res.ok) {
+                    loadTodayData();
+                }
+            } catch (err) {
+                console.error("Error logging medication:", err);
+            }
+        }
+    </script>
+</body>
+</html>

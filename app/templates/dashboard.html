@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Dashboard - CareBridge AI</title>
+    <meta name="description" content="Your personalized AI-powered recovery dashboard">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+</head>
+<body>
+
+    {% set active_page = 'dashboard' %}
+    {% include '_sidebar.html' %}
+
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+
+        <!-- Top Header Bar -->
+        <header class="top-header">
+            <div class="header-left">
+                <button class="mobile-toggle" id="mobileToggle">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div class="header-greeting">
+                    <h2>Good Morning, <span id="userName">Patient</span> 👋</h2>
+                    <p>Here's your recovery progress for today.</p>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="header-date">
+                    <i class="fa-regular fa-calendar"></i>
+                    <span id="currentDate"></span>
+                </div>
+                <button class="notif-btn" id="notifBtn">
+                    <i class="fa-solid fa-bell"></i>
+                    <span class="notif-badge">3</span>
+                </button>
+                <div class="user-avatar" id="userAvatar">
+                    <span>P</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dashboard Content -->
+        <div class="dashboard-body">
+
+            <!-- Recovery Score Banner -->
+            <div class="recovery-banner">
+                <div class="banner-text">
+                    <h3>Recovery Score</h3>
+                    <p>You're doing great! Keep up with your medications and daily check-ins.</p>
+                </div>
+                <div class="banner-score">
+                    <div class="score-ring" id="scoreRing">
+                        <svg viewBox="0 0 120 120">
+                            <circle class="ring-bg" cx="60" cy="60" r="52"/>
+                            <circle class="ring-fill" cx="60" cy="60" r="52" id="ringFill"/>
+                        </svg>
+                        <div class="score-value">
+                            <span id="scoreNum">78</span>
+                            <small>/ 100</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="banner-stats">
+                    <div class="banner-stat">
+                        <i class="fa-solid fa-pills"></i>
+                        <div>
+                            <span class="stat-val">92%</span>
+                            <span class="stat-lbl">Medication</span>
+                        </div>
+                    </div>
+                    <div class="banner-stat">
+                        <i class="fa-solid fa-calendar-check"></i>
+                        <div>
+                            <span class="stat-val">12</span>
+                            <span class="stat-lbl">Days Discharged</span>
+                        </div>
+                    </div>
+                    <div class="banner-stat">
+                        <i class="fa-solid fa-calendar-days"></i>
+                        <div>
+                            <span class="stat-val">2</span>
+                            <span class="stat-lbl">Upcoming Appts</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Stat Cards -->
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-card-icon blue">
+                        <i class="fa-solid fa-pills"></i>
+                    </div>
+                    <div class="stat-card-body">
+                        <p>Today's Medicines</p>
+                        <h3>3 / 4</h3>
+                        <span class="badge badge-success">1 Remaining</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-icon green">
+                        <i class="fa-solid fa-heart-pulse"></i>
+                    </div>
+                    <div class="stat-card-body">
+                        <p>Heart Rate</p>
+                        <h3>72 bpm</h3>
+                        <span class="badge badge-success">Normal</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-icon purple">
+                        <i class="fa-solid fa-droplet"></i>
+                    </div>
+                    <div class="stat-card-body">
+                        <p>Water Intake</p>
+                        <h3>1.8 L</h3>
+                        <span class="badge badge-warning">Need 0.2L more</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-icon orange">
+                        <i class="fa-solid fa-bed"></i>
+                    </div>
+                    <div class="stat-card-body">
+                        <p>Sleep Quality</p>
+                        <h3>7.5 hrs</h3>
+                        <span class="badge badge-success">Good</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts and Main Grid -->
+            <div class="dashboard-grid">
+
+                <!-- Recovery Trend Chart -->
+                <div class="dash-card span-2">
+                    <div class="card-header">
+                        <h4><i class="fa-solid fa-chart-line"></i> Weekly Recovery Trend</h4>
+                        <div class="card-actions">
+                            <button class="chip active" onclick="filterChart('week', this)">Week</button>
+                            <button class="chip" onclick="filterChart('month', this)">Month</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="recoveryChart" height="100"></canvas>
+                    </div>
+                </div>
+
+                <!-- Medication Adherence Chart -->
+                <div class="dash-card">
+                    <div class="card-header">
+                        <h4><i class="fa-solid fa-pills"></i> Medication Adherence</h4>
+                    </div>
+                    <div class="card-body chart-small">
+                        <canvas id="medChart"></canvas>
+                        <div class="chart-legend">
+                            <span><span class="dot green"></span> Taken (92%)</span>
+                            <span><span class="dot red"></span> Missed (8%)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Today's Medication Schedule -->
+                <div class="dash-card span-2">
+                    <div class="card-header">
+                        <h4><i class="fa-solid fa-clock"></i> Today's Medication Schedule</h4>
+                        <a href="#" class="card-link">View All</a>
+                    </div>
+                    <div class="card-body">
+                        <div class="med-timeline">
+                            <div class="med-item completed">
+                                <div class="med-time">8:00 AM</div>
+                                <div class="med-dot"></div>
+                                <div class="med-info">
+                                    <h5>Paracetamol 500mg</h5>
+                                    <p>After breakfast · 1 tablet</p>
+                                </div>
+                                <span class="badge badge-success"><i class="fa-solid fa-check"></i> Taken</span>
+                            </div>
+                            <div class="med-item completed">
+                                <div class="med-time">2:00 PM</div>
+                                <div class="med-dot"></div>
+                                <div class="med-info">
+                                    <h5>Amoxicillin 250mg</h5>
+                                    <p>After lunch · 1 capsule</p>
+                                </div>
+                                <span class="badge badge-success"><i class="fa-solid fa-check"></i> Taken</span>
+                            </div>
+                            <div class="med-item current">
+                                <div class="med-time">8:00 PM</div>
+                                <div class="med-dot pulse-dot"></div>
+                                <div class="med-info">
+                                    <h5>Metformin 500mg</h5>
+                                    <p>After dinner · 1 tablet</p>
+                                </div>
+                                <span class="badge badge-warning">Upcoming</span>
+                            </div>
+                            <div class="med-item">
+                                <div class="med-time">10:00 PM</div>
+                                <div class="med-dot"></div>
+                                <div class="med-info">
+                                    <h5>Vitamin D3 1000IU</h5>
+                                    <p>Before sleep · 1 tablet</p>
+                                </div>
+                                <span class="badge badge-secondary">Pending</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Upcoming Appointments -->
+                <div class="dash-card">
+                    <div class="card-header">
+                        <h4><i class="fa-solid fa-calendar-check"></i> Appointments</h4>
+                        <a href="#" class="card-link">View All</a>
+                    </div>
+                    <div class="card-body">
+                        <div class="appt-list">
+                            <div class="appt-item">
+                                <div class="appt-date">
+                                    <span class="appt-day">12</span>
+                                    <span class="appt-month">Aug</span>
+                                </div>
+                                <div class="appt-info">
+                                    <h5>Dr. Sarah Johnson</h5>
+                                    <p><i class="fa-solid fa-user-doctor"></i> Cardiologist</p>
+                                    <p><i class="fa-regular fa-clock"></i> 10:30 AM</p>
+                                </div>
+                                <span class="badge badge-primary">Confirmed</span>
+                            </div>
+                            <div class="appt-item">
+                                <div class="appt-date">
+                                    <span class="appt-day">19</span>
+                                    <span class="appt-month">Aug</span>
+                                </div>
+                                <div class="appt-info">
+                                    <h5>Dr. Raj Patel</h5>
+                                    <p><i class="fa-solid fa-user-doctor"></i> General Physician</p>
+                                    <p><i class="fa-regular fa-clock"></i> 2:00 PM</p>
+                                </div>
+                                <span class="badge badge-secondary">Pending</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Daily Check-In Quick Form -->
+                <div class="dash-card">
+                    <div class="card-header">
+                        <h4><i class="fa-solid fa-clipboard-list"></i> Quick Check-In</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="checkin-form">
+                            <div class="checkin-item">
+                                <label>Pain Level</label>
+                                <div class="pain-scale" id="painScale">
+                                    <button class="pain-btn" data-value="1">1</button>
+                                    <button class="pain-btn" data-value="2">2</button>
+                                    <button class="pain-btn" data-value="3">3</button>
+                                    <button class="pain-btn" data-value="4">4</button>
+                                    <button class="pain-btn" data-value="5">5</button>
+                                    <button class="pain-btn" data-value="6">6</button>
+                                    <button class="pain-btn" data-value="7">7</button>
+                                    <button class="pain-btn" data-value="8">8</button>
+                                    <button class="pain-btn" data-value="9">9</button>
+                                    <button class="pain-btn" data-value="10">10</button>
+                                </div>
+                            </div>
+                            <div class="checkin-item">
+                                <label>How do you feel today?</label>
+                                <div class="mood-row" id="moodSelector">
+                                    <button class="mood-btn" data-mood="great" title="Great">😄</button>
+                                    <button class="mood-btn" data-mood="good" title="Good">🙂</button>
+                                    <button class="mood-btn" data-mood="okay" title="Okay">😐</button>
+                                    <button class="mood-btn" data-mood="bad" title="Bad">😕</button>
+                                    <button class="mood-btn" data-mood="terrible" title="Terrible">😢</button>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary btn-full" id="submitCheckin">
+                                <i class="fa-solid fa-paper-plane"></i> Submit Check-In
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Assistant Quick Chat -->
+                <div class="dash-card">
+                    <div class="card-header">
+                        <h4><i class="fa-solid fa-robot"></i> Ask AI Assistant</h4>
+                        <a href="/ai-assistant" class="card-link">Open Full Chat</a>
+                    </div>
+                    <div class="card-body">
+                        <div class="quick-chat">
+                            <div class="quick-suggestions">
+                                <button class="suggestion-chip" onclick="sendQuickMsg('What are my medications for today?')">💊 Today's meds</button>
+                                <button class="suggestion-chip" onclick="sendQuickMsg('What should I eat during recovery?')">🥗 Diet tips</button>
+                                <button class="suggestion-chip" onclick="sendQuickMsg('What exercises can I do?')">🏃 Exercise</button>
+                                <button class="suggestion-chip" onclick="sendQuickMsg('What are warning signs I should watch for?')">⚠️ Warning signs</button>
+                            </div>
+                            <div class="quick-chat-input">
+                                <input type="text" id="quickChatInput" placeholder="Ask anything about your recovery...">
+                                <button id="quickChatSend"><i class="fa-solid fa-paper-plane"></i></button>
+                            </div>
+                            <div class="quick-chat-response" id="quickChatResponse" style="display:none;">
+                                <div class="ai-typing" id="aiTyping">
+                                    <div class="typing-dot"></div>
+                                    <div class="typing-dot"></div>
+                                    <div class="typing-dot"></div>
+                                </div>
+                                <div class="ai-response-text" id="aiResponseText"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Upload Discharge Summary -->
+                <div class="dash-card span-2">
+                    <div class="card-header">
+                        <h4><i class="fa-solid fa-file-medical"></i> Upload Discharge Summary</h4>
+                        <span class="badge badge-primary">AI-Powered</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="upload-section">
+                            <div class="upload-area" id="uploadArea">
+                                <div class="upload-icon">
+                                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                                </div>
+                                <h4>Drag & Drop your discharge summary</h4>
+                                <p>or <label for="fileInput" class="upload-link">browse to upload</label></p>
+                                <p class="upload-hint">Supports PDF, Images, DOC formats</p>
+                                <input type="file" id="fileInput" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx" style="display:none;">
+                            </div>
+                            <div class="upload-or">— OR —</div>
+                            <div class="paste-section">
+                                <label>Paste Discharge Summary Text</label>
+                                <textarea id="dischargeText" rows="5" placeholder="Paste the text from your discharge summary here..."></textarea>
+                                <button class="btn btn-primary" id="analyzeBtn">
+                                    <i class="fa-solid fa-wand-magic-sparkles"></i> Analyze with AI
+                                </button>
+                            </div>
+                        </div>
+                        <!-- Analysis Result (hidden by default) -->
+                        <div class="analysis-result" id="analysisResult" style="display:none;">
+                            <div class="analysis-header">
+                                <h4><i class="fa-solid fa-circle-check"></i> Analysis Complete!</h4>
+                                <button class="btn btn-outline btn-sm" onclick="closeAnalysis()">Close</button>
+                            </div>
+                            <div id="analysisContent"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Vital Signs -->
+                <div class="dash-card">
+                    <div class="card-header">
+                        <h4><i class="fa-solid fa-stethoscope"></i> Vital Signs</h4>
+                        <span class="badge badge-success">Normal</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="vitals-grid">
+                            <div class="vital-item">
+                                <div class="vital-icon red"><i class="fa-solid fa-heart"></i></div>
+                                <div class="vital-info">
+                                    <span class="vital-val">120/80</span>
+                                    <span class="vital-lbl">Blood Pressure</span>
+                                </div>
+                            </div>
+                            <div class="vital-item">
+                                <div class="vital-icon blue"><i class="fa-solid fa-lungs"></i></div>
+                                <div class="vital-info">
+                                    <span class="vital-val">98%</span>
+                                    <span class="vital-lbl">Oxygen Sat.</span>
+                                </div>
+                            </div>
+                            <div class="vital-item">
+                                <div class="vital-icon orange"><i class="fa-solid fa-temperature-half"></i></div>
+                                <div class="vital-info">
+                                    <span class="vital-val">98.6°F</span>
+                                    <span class="vital-lbl">Temperature</span>
+                                </div>
+                            </div>
+                            <div class="vital-item">
+                                <div class="vital-icon green"><i class="fa-solid fa-droplet"></i></div>
+                                <div class="vital-info">
+                                    <span class="vital-val">110 mg/dL</span>
+                                    <span class="vital-lbl">Blood Sugar</span>
+                                </div>
+                            </div>
+                        </div>
+                        <canvas id="vitalChart" height="80"></canvas>
+                    </div>
+                </div>
+
+                <!-- Mood Trend Chart -->
+                <div class="dash-card">
+                    <div class="card-header">
+                        <h4><i class="fa-solid fa-face-smile"></i> Mood Trend</h4>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="moodChart" height="120"></canvas>
+                    </div>
+                </div>
+
+            </div>
+
+        </div><!-- end dashboard-body -->
+    </main>
+
+    <!-- Notification Drawer -->
+    <div class="notif-drawer" id="notifDrawer">
+        <div class="notif-drawer-header">
+            <h4>Notifications</h4>
+            <button onclick="document.getElementById('notifDrawer').classList.remove('open')">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="notif-list">
+            <div class="notif-item unread">
+                <div class="notif-icon blue"><i class="fa-solid fa-pills"></i></div>
+                <div class="notif-text">
+                    <p>Time to take your evening dose of <strong>Metformin 500mg</strong></p>
+                    <span>5 minutes ago</span>
+                </div>
+            </div>
+            <div class="notif-item unread">
+                <div class="notif-icon green"><i class="fa-solid fa-calendar-check"></i></div>
+                <div class="notif-text">
+                    <p>Reminder: Appointment with <strong>Dr. Sarah Johnson</strong> in 5 days</p>
+                    <span>1 hour ago</span>
+                </div>
+            </div>
+            <div class="notif-item">
+                <div class="notif-icon purple"><i class="fa-solid fa-robot"></i></div>
+                <div class="notif-text">
+                    <p>AI tip: Staying hydrated speeds up your recovery by 30%</p>
+                    <span>3 hours ago</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="drawer-overlay" id="drawerOverlay"></div>
+
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+</html>

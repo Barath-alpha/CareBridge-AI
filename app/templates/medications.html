@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medications - CareBridge AI</title>
+    <meta name="description" content="Manage your medications, schedule, and dosage information.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <style>
+        .page-body { padding: 28px; display: flex; flex-direction: column; gap: 24px; }
+        .page-hero {
+            background: linear-gradient(135deg, #1e40af, #2563eb, #3b82f6);
+            border-radius: 20px; padding: 26px 32px; color: #fff;
+            display: flex; align-items: center; gap: 24px;
+        }
+        .page-hero i { font-size: 2.5rem; opacity: 0.9; }
+        .page-hero h1 { font-size: 1.5rem; font-weight: 800; margin-bottom: 4px; }
+        .page-hero p { font-size: 0.875rem; opacity: 0.88; }
+
+        .med-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+        .mc { background: #fff; border-radius: 16px; box-shadow: var(--shadow); }
+        .mc-header { padding: 18px 22px 0; display: flex; align-items: center; justify-content: space-between; }
+        .mc-header h3 { font-size: 0.95rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+        .mc-header h3 i { color: var(--primary); }
+        .mc-body { padding: 18px 22px 22px; }
+
+        /* Medication Table */
+        .med-table { width: 100%; border-collapse: collapse; }
+        .med-table thead th {
+            font-size: 0.75rem; font-weight: 600; color: var(--text-secondary);
+            text-transform: uppercase; letter-spacing: 0.06em;
+            padding: 0 0 12px; text-align: left; border-bottom: 1px solid var(--border-color);
+        }
+        .med-table tbody tr { border-bottom: 1px solid var(--border-color); transition: background 0.15s; }
+        .med-table tbody tr:last-child { border-bottom: none; }
+        .med-table tbody tr:hover { background: var(--body-bg); }
+        .med-table td { padding: 14px 8px; vertical-align: middle; }
+        .med-pill-name { font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 10px; }
+        .pill-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+        .med-table td small { color: var(--text-secondary); font-size: 0.75rem; display: block; margin-top: 2px; }
+        .med-table td .badge { white-space: nowrap; }
+
+        /* Schedule timeline */
+        .sched-list { display: flex; flex-direction: column; gap: 10px; }
+        .sched-item {
+            display: flex; align-items: center; gap: 12px;
+            background: var(--body-bg); border-radius: 12px; padding: 13px 14px;
+            border-left: 3px solid transparent;
+        }
+        .sched-item.taken { border-color: #22c55e; }
+        .sched-item.upcoming { border-color: #2563eb; }
+        .sched-item.pending { border-color: #94a3b8; }
+        .sched-time { font-size: 0.78rem; font-weight: 700; color: var(--text-secondary); width: 55px; flex-shrink: 0; }
+        .sched-info { flex: 1; }
+        .sched-info h5 { font-size: 0.85rem; font-weight: 600; margin-bottom: 2px; }
+        .sched-info p { font-size: 0.75rem; color: var(--text-secondary); }
+
+        /* Refill cards */
+        .refill-list { display: flex; flex-direction: column; gap: 10px; }
+        .refill-item {
+            background: var(--body-bg); border-radius: 12px; padding: 14px;
+            display: flex; align-items: center; gap: 12px;
+        }
+        .refill-days {
+            width: 48px; height: 48px; border-radius: 12px;
+            background: #fff; display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem; font-weight: 800; flex-shrink: 0;
+        }
+        .refill-days.low { color: #dc2626; }
+        .refill-days.ok { color: #16a34a; }
+        .refill-info { flex: 1; }
+        .refill-info h5 { font-size: 0.85rem; font-weight: 600; margin-bottom: 2px; }
+        .refill-info p { font-size: 0.75rem; color: var(--text-secondary); }
+        .refill-bar { height: 5px; background: var(--border-color); border-radius: 50px; margin-top: 6px; }
+        .refill-fill { height: 100%; border-radius: 50px; }
+
+        @media (max-width: 1000px) { .med-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    {% set active_page = 'medications' %}
+    {% include '_sidebar.html' %}
+
+    <main class="main-content" id="mainContent">
+        <header class="top-header">
+            <div class="header-left">
+                <button class="mobile-toggle" id="mobileToggle"><i class="fa-solid fa-bars"></i></button>
+                <div class="header-greeting">
+                    <h2>Medications 💊</h2>
+                    <p>Track your prescriptions, schedule, and refills.</p>
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-primary btn-sm" style="font-size:0.82rem;">
+                    <i class="fa-solid fa-plus"></i> Add Medication
+                </button>
+            </div>
+        </header>
+
+        <div class="page-body">
+            <!-- Hero -->
+            <div class="page-hero">
+                <i class="fa-solid fa-pills"></i>
+                <div>
+                    <h1>4 Active Medications</h1>
+                    <p>Today's adherence: <strong>92%</strong> — You've taken 3 of 4 scheduled doses. 1 upcoming dose at 8:00 PM.</p>
+                </div>
+                <div style="display:flex;gap:12px;margin-left:auto;flex-shrink:0;flex-wrap:wrap;">
+                    <div style="background:rgba(255,255,255,0.18);padding:12px 18px;border-radius:12px;text-align:center;">
+                        <div style="font-size:1.5rem;font-weight:800;line-height:1;">3/4</div>
+                        <div style="font-size:0.72rem;opacity:0.85;margin-top:2px;">Today Taken</div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.18);padding:12px 18px;border-radius:12px;text-align:center;">
+                        <div style="font-size:1.5rem;font-weight:800;line-height:1;">92%</div>
+                        <div style="font-size:0.72rem;opacity:0.85;margin-top:2px;">Adherence</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main grid -->
+            <div class="med-grid">
+                <!-- Left: Medications Table -->
+                <div>
+                    <div class="mc">
+                        <div class="mc-header">
+                            <h3><i class="fa-solid fa-list-ul"></i> All Medications</h3>
+                            <span class="badge badge-primary">4 Active</span>
+                        </div>
+                        <div class="mc-body">
+                            <div class="table-responsive">
+                                <table class="med-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Medication</th>
+                                            <th>Dosage</th>
+                                            <th>Frequency</th>
+                                            <th>Instructions</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><div class="med-pill-name"><div class="pill-dot" style="background:#2563eb;"></div><div>Paracetamol<small>Pain Relief</small></div></div></td>
+                                            <td>500 mg<small>1 tablet</small></td>
+                                            <td>3× daily<small>After meals</small></td>
+                                            <td><small>Take with food. Avoid alcohol.</small></td>
+                                            <td><span class="badge badge-success">Active</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td><div class="med-pill-name"><div class="pill-dot" style="background:#10b981;"></div><div>Amoxicillin<small>Antibiotic</small></div></div></td>
+                                            <td>250 mg<small>1 capsule</small></td>
+                                            <td>2× daily<small>Morning & Evening</small></td>
+                                            <td><small>Complete the full course.</small></td>
+                                            <td><span class="badge badge-success">Active</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td><div class="med-pill-name"><div class="pill-dot" style="background:#f59e0b;"></div><div>Metformin<small>Diabetes</small></div></div></td>
+                                            <td>500 mg<small>1 tablet</small></td>
+                                            <td>2× daily<small>After meals</small></td>
+                                            <td><small>Monitor blood sugar regularly.</small></td>
+                                            <td><span class="badge badge-success">Active</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td><div class="med-pill-name"><div class="pill-dot" style="background:#8b5cf6;"></div><div>Vitamin D3<small>Supplement</small></div></div></td>
+                                            <td>1000 IU<small>1 tablet</small></td>
+                                            <td>1× daily<small>Before sleep</small></td>
+                                            <td><small>Take with calcium-rich food.</small></td>
+                                            <td><span class="badge badge-primary">Supplement</span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right column -->
+                <div style="display:flex;flex-direction:column;gap:20px;">
+                    <!-- Today's Schedule -->
+                    <div class="mc">
+                        <div class="mc-header"><h3><i class="fa-solid fa-clock"></i> Today's Schedule</h3></div>
+                        <div class="mc-body">
+                            <div class="sched-list">
+                                <div class="sched-item taken">
+                                    <div class="sched-time">8:00 AM</div>
+                                    <div class="sched-info"><h5>Paracetamol 500mg</h5><p>After breakfast · 1 tablet</p></div>
+                                    <span class="badge badge-success"><i class="fa-solid fa-check"></i> Taken</span>
+                                </div>
+                                <div class="sched-item taken">
+                                    <div class="sched-time">8:30 AM</div>
+                                    <div class="sched-info"><h5>Amoxicillin 250mg</h5><p>After breakfast · 1 capsule</p></div>
+                                    <span class="badge badge-success"><i class="fa-solid fa-check"></i> Taken</span>
+                                </div>
+                                <div class="sched-item taken">
+                                    <div class="sched-time">2:00 PM</div>
+                                    <div class="sched-info"><h5>Metformin 500mg</h5><p>After lunch · 1 tablet</p></div>
+                                    <span class="badge badge-success"><i class="fa-solid fa-check"></i> Taken</span>
+                                </div>
+                                <div class="sched-item upcoming">
+                                    <div class="sched-time">8:00 PM</div>
+                                    <div class="sched-info"><h5>Paracetamol 500mg</h5><p>After dinner · 1 tablet</p></div>
+                                    <span class="badge badge-warning">Upcoming</span>
+                                </div>
+                                <div class="sched-item pending">
+                                    <div class="sched-time">8:30 PM</div>
+                                    <div class="sched-info"><h5>Amoxicillin 250mg</h5><p>After dinner · 1 capsule</p></div>
+                                    <span class="badge badge-secondary">Pending</span>
+                                </div>
+                                <div class="sched-item pending">
+                                    <div class="sched-time">10:00 PM</div>
+                                    <div class="sched-info"><h5>Vitamin D3 1000IU</h5><p>Before sleep · 1 tablet</p></div>
+                                    <span class="badge badge-secondary">Pending</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Refill Status -->
+                    <div class="mc">
+                        <div class="mc-header"><h3><i class="fa-solid fa-rotate"></i> Refill Status</h3></div>
+                        <div class="mc-body">
+                            <div class="refill-list">
+                                <div class="refill-item">
+                                    <div class="refill-days low">3</div>
+                                    <div class="refill-info">
+                                        <h5>Paracetamol</h5>
+                                        <p>Only 3 days supply left — Refill soon!</p>
+                                        <div class="refill-bar"><div class="refill-fill" style="width:15%;background:#ef4444;"></div></div>
+                                    </div>
+                                    <button class="btn btn-primary btn-sm" style="font-size:0.75rem;">Refill</button>
+                                </div>
+                                <div class="refill-item">
+                                    <div class="refill-days ok">14</div>
+                                    <div class="refill-info">
+                                        <h5>Amoxicillin</h5>
+                                        <p>14 days remaining</p>
+                                        <div class="refill-bar"><div class="refill-fill" style="width:50%;background:#22c55e;"></div></div>
+                                    </div>
+                                </div>
+                                <div class="refill-item">
+                                    <div class="refill-days ok">21</div>
+                                    <div class="refill-info">
+                                        <h5>Metformin</h5>
+                                        <p>21 days remaining</p>
+                                        <div class="refill-bar"><div class="refill-fill" style="width:70%;background:#22c55e;"></div></div>
+                                    </div>
+                                </div>
+                                <div class="refill-item">
+                                    <div class="refill-days ok">28</div>
+                                    <div class="refill-info">
+                                        <h5>Vitamin D3</h5>
+                                        <p>28 days remaining</p>
+                                        <div class="refill-bar"><div class="refill-fill" style="width:90%;background:#22c55e;"></div></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const mobileToggle = document.getElementById('mobileToggle');
+            const mainContent = document.getElementById('mainContent');
+            if (sidebarToggle) sidebarToggle.addEventListener('click', () => { sidebar.classList.toggle('collapsed'); mainContent.classList.toggle('expanded'); });
+            if (mobileToggle) mobileToggle.addEventListener('click', () => sidebar.classList.toggle('mobile-open'));
+        });
+    </script>
+</body>
+</html>

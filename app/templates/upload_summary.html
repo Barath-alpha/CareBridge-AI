@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Summary - CareBridge AI</title>
+    <meta name="description" content="Upload and analyze your discharge summary with AI.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <style>
+        .page-body { padding: 28px; display: flex; flex-direction: column; gap: 24px; }
+        .uc { background: #fff; border-radius: 16px; box-shadow: var(--shadow); }
+        .uc-header { padding: 20px 24px 0; display: flex; align-items: center; justify-content: space-between; }
+        .uc-header h3 { font-size: 0.95rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+        .uc-header h3 i { color: var(--primary); }
+        .uc-body { padding: 20px 24px 24px; }
+        .upload-layout { display: grid; grid-template-columns: 1fr 320px; gap: 20px; }
+
+        .page-hero {
+            background: linear-gradient(135deg, #d97706, #b45309, #f59e0b);
+            border-radius: 20px; padding: 26px 32px; color: #fff;
+            display: flex; align-items: center; gap: 24px;
+        }
+        .page-hero i.big { font-size: 2.5rem; opacity: 0.9; }
+        .page-hero h1 { font-size: 1.5rem; font-weight: 800; margin-bottom: 4px; }
+        .page-hero p { font-size: 0.875rem; opacity: 0.88; }
+
+        .upload-zone {
+            border: 2px dashed var(--border-color); border-radius: 18px;
+            padding: 48px 32px; text-align: center; cursor: pointer;
+            transition: all 0.2s; background: var(--body-bg);
+        }
+        .upload-zone:hover, .upload-zone.drag-over {
+            border-color: var(--primary); background: var(--primary-light);
+        }
+        .upload-zone .upload-icon { font-size: 3rem; color: var(--primary); margin-bottom: 16px; }
+        .upload-zone h4 { font-size: 1.1rem; font-weight: 600; margin-bottom: 8px; }
+        .upload-zone p { font-size: 0.85rem; color: var(--text-secondary); }
+        .upload-zone .browse-link { color: var(--primary); font-weight: 600; cursor: pointer; }
+        .upload-zone .hint { font-size: 0.75rem; color: var(--text-secondary); margin-top: 8px; }
+        .or-divider { text-align: center; color: var(--text-secondary); font-size: 0.85rem; padding: 16px 0; display: flex; align-items: center; gap: 12px; }
+        .or-divider::before, .or-divider::after { content: ''; flex: 1; height: 1px; background: var(--border-color); }
+
+        .paste-area {
+            width: 100%; padding: 14px 16px; border: 1.5px solid var(--border-color);
+            border-radius: 12px; font-size: 0.875rem; resize: vertical; outline: none;
+            font-family: 'Poppins', sans-serif; background: var(--body-bg); min-height: 140px;
+            transition: border-color 0.2s;
+        }
+        .paste-area:focus { border-color: var(--primary); background: #fff; }
+
+        .analysis-card { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 16px; padding: 20px; }
+        .analysis-card h4 { color: #16a34a; font-size: 1rem; font-weight: 700; display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+        .analysis-row { margin-bottom: 14px; padding-bottom: 14px; border-bottom: 1px solid #d1fae5; }
+        .analysis-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .analysis-row strong { display: block; font-size: 0.8rem; color: #166534; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+        .analysis-row p, .analysis-row span { font-size: 0.875rem; color: var(--text-primary); }
+        .analysis-row ul { margin-left: 18px; font-size: 0.875rem; color: var(--text-primary); }
+        .analysis-row li { margin-bottom: 4px; }
+        .warning-row { background: #fff7ed; border-radius: 10px; padding: 12px; }
+        .warning-row strong { color: #92400e; }
+
+        .prev-upload-item {
+            display: flex; align-items: center; gap: 12px; padding: 12px;
+            background: var(--body-bg); border-radius: 10px; margin-bottom: 8px; cursor: pointer;
+            transition: background 0.2s;
+        }
+        .prev-upload-item:last-child { margin-bottom: 0; }
+        .prev-upload-item:hover { background: var(--primary-light); }
+        .prev-upload-item i { color: var(--primary); font-size: 1.1rem; flex-shrink: 0; }
+        .prev-upload-item .info { flex: 1; }
+        .prev-upload-item .info h5 { font-size: 0.83rem; font-weight: 600; margin-bottom: 2px; }
+        .prev-upload-item .info p { font-size: 0.72rem; color: var(--text-secondary); }
+
+        @media (max-width: 1000px) { .upload-layout { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    {% set active_page = 'upload' %}
+    {% include '_sidebar.html' %}
+
+    <main class="main-content" id="mainContent">
+        <header class="top-header">
+            <div class="header-left">
+                <button class="mobile-toggle" id="mobileToggle"><i class="fa-solid fa-bars"></i></button>
+                <div class="header-greeting">
+                    <h2>Upload Summary 📄</h2>
+                    <p>Let AI analyze your discharge summary and extract key health information.</p>
+                </div>
+            </div>
+        </header>
+
+        <div class="page-body">
+            <div class="page-hero">
+                <i class="fa-solid fa-wand-magic-sparkles big"></i>
+                <div>
+                    <h1>AI-Powered Discharge Analysis</h1>
+                    <p>Upload your hospital discharge summary and our AI will extract medications, follow-ups, dietary advice, and warning signs instantly.</p>
+                </div>
+            </div>
+
+            <div class="upload-layout">
+                <div class="uc">
+                    <div class="uc-header"><h3><i class="fa-solid fa-cloud-arrow-up"></i> Upload Discharge Summary</h3><span class="badge badge-primary"><i class="fa-solid fa-robot"></i> AI-Powered</span></div>
+                    <div class="uc-body">
+                        <div class="upload-zone" id="uploadZone">
+                            <div class="upload-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+                            <h4>Drag &amp; Drop your file here</h4>
+                            <p>or <label for="fileInput" class="browse-link">browse to upload</label></p>
+                            <p class="hint">Supports PDF, PNG, JPG, DOC, DOCX · Max 10MB</p>
+                            <input type="file" id="fileInput" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx" style="display:none;">
+                        </div>
+
+                        <div class="or-divider">— OR —</div>
+
+                        <div>
+                            <label style="font-size:0.875rem;font-weight:600;display:block;margin-bottom:10px;">Paste Discharge Summary Text</label>
+                            <textarea class="paste-area" id="dischargeText" placeholder="Paste the text from your discharge summary here...&#10;&#10;Example: Patient was admitted on 28/07/2026 with chest pain..."></textarea>
+                            <button class="btn btn-primary" id="analyzeBtn" style="margin-top:14px;width:100%;font-size:0.95rem;padding:13px;">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i> Analyze with AI
+                            </button>
+                        </div>
+
+                        <!-- Analysis Result -->
+                        <div id="analysisResult" style="display:none;margin-top:20px;">
+                            <div class="analysis-card">
+                                <h4><i class="fa-solid fa-circle-check"></i> Analysis Complete!</h4>
+                                <div id="analysisContent"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display:flex;flex-direction:column;gap:20px;">
+                    <div class="uc">
+                        <div class="uc-header"><h3><i class="fa-solid fa-clock-rotate-left"></i> Previous Uploads</h3></div>
+                        <div class="uc-body">
+                            <div class="prev-upload-item">
+                                <i class="fa-solid fa-file-pdf"></i>
+                                <div class="info"><h5>Discharge_July28.pdf</h5><p>Uploaded Aug 1 · Analyzed</p></div>
+                                <i class="fa-solid fa-chevron-right" style="color:var(--text-secondary);font-size:0.75rem;"></i>
+                            </div>
+                            <div class="prev-upload-item">
+                                <i class="fa-solid fa-file-image"></i>
+                                <div class="info"><h5>Summary_scan.jpg</h5><p>Uploaded Jul 30 · Analyzed</p></div>
+                                <i class="fa-solid fa-chevron-right" style="color:var(--text-secondary);font-size:0.75rem;"></i>
+                            </div>
+                            <div style="text-align:center;padding:16px 0;color:var(--text-secondary);font-size:0.8rem;">No more previous uploads.</div>
+                        </div>
+                    </div>
+
+                    <div class="uc">
+                        <div class="uc-header"><h3><i class="fa-solid fa-circle-info"></i> How It Works</h3></div>
+                        <div class="uc-body">
+                            <div style="display:flex;flex-direction:column;gap:14px;">
+                                <div style="display:flex;gap:12px;align-items:flex-start;">
+                                    <div style="width:28px;height:28px;background:var(--primary);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;flex-shrink:0;">1</div>
+                                    <div><p style="font-size:0.83rem;font-weight:600;">Upload or Paste</p><p style="font-size:0.78rem;color:var(--text-secondary);">Upload your PDF/image or paste the summary text.</p></div>
+                                </div>
+                                <div style="display:flex;gap:12px;align-items:flex-start;">
+                                    <div style="width:28px;height:28px;background:var(--primary);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;flex-shrink:0;">2</div>
+                                    <div><p style="font-size:0.83rem;font-weight:600;">AI Analyzes</p><p style="font-size:0.78rem;color:var(--text-secondary);">Google Gemini extracts medications, follow-ups, and warnings.</p></div>
+                                </div>
+                                <div style="display:flex;gap:12px;align-items:flex-start;">
+                                    <div style="width:28px;height:28px;background:var(--primary);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;flex-shrink:0;">3</div>
+                                    <div><p style="font-size:0.83rem;font-weight:600;">Get Insights</p><p style="font-size:0.78rem;color:var(--text-secondary);">Review structured results in patient-friendly language.</p></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const mobileToggle = document.getElementById('mobileToggle');
+            const mainContent = document.getElementById('mainContent');
+            if (sidebarToggle) sidebarToggle.addEventListener('click', () => { sidebar.classList.toggle('collapsed'); mainContent.classList.toggle('expanded'); });
+            if (mobileToggle) mobileToggle.addEventListener('click', () => sidebar.classList.toggle('mobile-open'));
+
+            const uploadZone = document.getElementById('uploadZone');
+            const fileInput = document.getElementById('fileInput');
+            uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
+            uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
+            uploadZone.addEventListener('drop', e => {
+                e.preventDefault(); uploadZone.classList.remove('drag-over');
+                const file = e.dataTransfer.files[0];
+                if (file) { uploadZone.querySelector('h4').textContent = file.name; uploadZone.querySelector('p').textContent = (file.size/1024).toFixed(1) + ' KB'; }
+            });
+            fileInput.addEventListener('change', e => {
+                const file = e.target.files[0];
+                if (file) { uploadZone.querySelector('h4').textContent = file.name; }
+            });
+
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            const analysisResult = document.getElementById('analysisResult');
+            const analysisContent = document.getElementById('analysisContent');
+            let extractedDataStore = null;
+
+            analyzeBtn.addEventListener('click', async () => {
+                const text = document.getElementById('dischargeText').value.trim();
+                if (!text) { alert('Please paste your discharge summary text first.'); return; }
+                analyzeBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Analyzing...';
+                analyzeBtn.disabled = true;
+                try {
+                    const res = await fetch('/api/recovery/upload-summary', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('access_token') || ''}`
+                        },
+                        body: JSON.stringify({ text })
+                    });
+                    const data = await res.json();
+                    
+                    if (data.success) {
+                        extractedDataStore = data.data;
+                        let html = `
+                            <div style="background:#fff;border-radius:12px;padding:20px;border:1px solid var(--border-color);margin-bottom:16px;">
+                                <h4 style="color:var(--primary);font-size:0.95rem;margin-bottom:14px;"><i class="fa-solid fa-shield-halved"></i> Verify & Edit Extracted Recovery Details</h4>
+                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+                                    <div>
+                                        <label style="font-size:0.75rem;font-weight:700;">Patient Name</label>
+                                        <input type="text" id="verifyName" class="form-input" style="padding:10px;font-size:0.8rem;" value="${extractedDataStore.patient_name || ''}">
+                                    </div>
+                                    <div>
+                                        <label style="font-size:0.75rem;font-weight:700;">Diagnosis</label>
+                                        <input type="text" id="verifyDiagnosis" class="form-input" style="padding:10px;font-size:0.8rem;" value="${extractedDataStore.diagnosis || ''}">
+                                    </div>
+                                </div>
+                                <div style="margin-bottom:14px;">
+                                    <label style="font-size:0.75rem;font-weight:700;">Discharge Date</label>
+                                    <input type="text" id="verifyDate" class="form-input" style="padding:10px;font-size:0.8rem;" value="${extractedDataStore.discharge_date || ''}">
+                                </div>
+                                
+                                <h5 style="font-size:0.85rem;font-weight:700;margin-top:16px;margin-bottom:6px;">Medications</h5>
+                                <div id="verifyMedsContainer">
+                                    ${(extractedDataStore.medications || []).map((m, idx) => `
+                                        <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;margin-bottom:8px;">
+                                            <input type="text" class="form-input verify-med-name" style="padding:8px;font-size:0.8rem;" value="${m.name || ''}" placeholder="Med Name">
+                                            <input type="text" class="form-input verify-med-dosage" style="padding:8px;font-size:0.8rem;" value="${m.dosage || ''}" placeholder="Dosage">
+                                            <input type="text" class="form-input verify-med-freq" style="padding:8px;font-size:0.8rem;" value="${m.frequency || ''}" placeholder="Frequency">
+                                        </div>
+                                    `).join('')}
+                                </div>
+                                
+                                <button class="btn btn-primary btn-full" id="btnConfirmRecovery" style="margin-top:18px;"><i class="fa-solid fa-square-check"></i> Save & Generate Recovery Roadmap</button>
+                                <p style="font-size:0.68rem;color:var(--text-secondary);text-align:center;margin-top:8px;line-height:1.4;">
+                                    *CareBridge AI does not replace professional medical diagnosis or treatment. Verify coordinates with your clinician before approving.
+                                </p>
+                            </div>
+                        `;
+                        analysisContent.innerHTML = html;
+                        analysisResult.style.display = 'block';
+
+                        // Set event handler for confirmation button
+                        document.getElementById('btnConfirmRecovery').addEventListener('click', submitRecoveryPlanApproval);
+
+                    } else {
+                        analysisContent.innerHTML = `<p style="color:#dc2626;">${data.error || 'Extraction failed.'}</p>`;
+                        analysisResult.style.display = 'block';
+                    }
+                } catch(e) {
+                    analysisContent.innerHTML = `<p style="color:#dc2626;">Error communicating with AI: ${e.message}</p>`;
+                    analysisResult.style.display = 'block';
+                }
+                analyzeBtn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Analyze with AI';
+                analyzeBtn.disabled = false;
+            });
+
+            async function submitRecoveryPlanApproval() {
+                const btn = document.getElementById('btnConfirmRecovery');
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Registering Plan...';
+
+                // Re-compile structured data from editor inputs
+                const approvedData = {
+                    patient_name: document.getElementById('verifyName').value,
+                    diagnosis: document.getElementById('verifyDiagnosis').value,
+                    discharge_date: document.getElementById('verifyDate').value,
+                    medications: [],
+                    follow_up_appointments: extractedDataStore.follow_up_appointments || [],
+                    dietary_recommendations: extractedDataStore.dietary_recommendations || [],
+                    activity_restrictions: extractedDataStore.activity_restrictions || [],
+                    warning_signs: extractedDataStore.warning_signs || [],
+                    special_care_instructions: extractedDataStore.special_care_instructions || []
+                };
+
+                const medNames = document.querySelectorAll('.verify-med-name');
+                const medDosages = document.querySelectorAll('.verify-med-dosage');
+                const medFreqs = document.querySelectorAll('.verify-med-freq');
+
+                medNames.forEach((input, idx) => {
+                    if (input.value.trim()) {
+                        approvedData.medications.push({
+                            name: input.value,
+                            dosage: medDosages[idx].value,
+                            frequency: medFreqs[idx].value,
+                            instructions: 'Take as directed by doctor.'
+                        });
+                    }
+                });
+
+                try {
+                    const res = await fetch('/api/recovery/approve-plan', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('access_token') || ''}`
+                        },
+                        body: JSON.stringify({ data: approvedData })
+                    });
+
+                    if (res.ok) {
+                        alert("🎉 Recovery Roadmap generated successfully! You can view today's tasks and scheduled medications now.");
+                        window.location.href = '/today';
+                    } else {
+                        alert("Failed to submit approved plan details.");
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="fa-solid fa-square-check"></i> Save & Generate Recovery Roadmap';
+                    }
+                } catch(e) {
+                    console.error("Failed to approve plan:", e);
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-square-check"></i> Save & Generate Recovery Roadmap';
+                }
+            }
+        });
+    </script>
+</body>
+</html>

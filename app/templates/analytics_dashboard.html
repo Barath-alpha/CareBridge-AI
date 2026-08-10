@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital Analytics - CareBridge AI</title>
+    <meta name="description" content="Hospital Administrator Operational KPI Metrics dashboard.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <style>
+        .page-body { padding: 28px; display: flex; flex-direction: column; gap: 24px; }
+        .ac { background: #fff; border-radius: 16px; box-shadow: var(--shadow); }
+        .ac-header { padding: 18px 22px 0; display: flex; align-items: center; justify-content: space-between; }
+        .ac-header h3 { font-size: 0.95rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+        .ac-header h3 i { color: var(--primary); }
+        .ac-body { padding: 18px 22px 22px; }
+        
+        .analytics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        
+        .stat-summary { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; }
+        .ss-card { background: #fff; border-radius: 14px; padding: 18px 20px; box-shadow: var(--shadow); display: flex; align-items: center; gap: 14px; }
+        .ss-icon { width: 46px; height: 46px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+        .ss-info p { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 2px; }
+        .ss-info h4 { font-size: 1.3rem; font-weight: 800; line-height: 1; }
+
+        .workload-item {
+            padding: 14px; border: 1px solid var(--border-color); border-radius: 12px; margin-bottom: 10px;
+        }
+
+        @media (max-width: 1000px) { .analytics-grid { grid-template-columns: 1fr; } .stat-summary { grid-template-columns: repeat(2,1fr); } }
+    </style>
+</head>
+<body>
+    {% set active_page = 'analytics' %}
+    {% include '_sidebar.html' %}
+
+    <main class="main-content" id="mainContent">
+        <header class="top-header">
+            <div class="header-left">
+                <button class="mobile-toggle" id="mobileToggle"><i class="fa-solid fa-bars"></i></button>
+                <div class="header-greeting">
+                    <h2>Hospital Analytics 📊</h2>
+                    <p>Operational KPI metrics and workload distributions dashboard.</p>
+                </div>
+            </div>
+        </header>
+
+        <div class="page-body">
+            <!-- Stats overview -->
+            <div class="stat-summary">
+                <div class="ss-card">
+                    <div class="ss-icon" style="background:#eff6ff;color:#2563eb;"><i class="fa-solid fa-file-medical"></i></div>
+                    <div class="ss-info"><p>Active Programs</p><h4 id="kpiActive">0</h4></div>
+                </div>
+                <div class="ss-card">
+                    <div class="ss-icon" style="background:#fee2e2;color:#ef4444;"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                    <div class="ss-info"><p>Active Alerts</p><h4 id="kpiAlerts">0</h4></div>
+                </div>
+                <div class="ss-card">
+                    <div class="ss-icon" style="background:#f0fdf4;color:#16a34a;"><i class="fa-solid fa-clipboard-check"></i></div>
+                    <div class="ss-info"><p>Compliance Rate</p><h4 id="kpiCompliance">0%</h4></div>
+                </div>
+                <div class="ss-card">
+                    <div class="ss-icon" style="background:#f5f3ff;color:#7c3aed;"><i class="fa-solid fa-pills"></i></div>
+                    <div class="ss-info"><p>Med Adherence</p><h4 id="kpiAdherence">0%</h4></div>
+                </div>
+            </div>
+
+            <div class="analytics-grid">
+                <!-- Operational chart -->
+                <div class="ac">
+                    <div class="ac-header"><h3><i class="fa-solid fa-chart-line"></i> Program Performance Metrics</h3></div>
+                    <div class="ac-body">
+                        <canvas id="performanceChart" height="150"></canvas>
+                    </div>
+                </div>
+
+                <!-- Coordinator workload -->
+                <div class="ac">
+                    <div class="ac-header"><h3><i class="fa-solid fa-user-nurse"></i> Coordinator Care Teams</h3></div>
+                    <div class="ac-body" id="workloadContainer">
+                        <!-- Dynamic Workload list -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const mobileToggle = document.getElementById('mobileToggle');
+            const mainContent = document.getElementById('mainContent');
+            if (sidebarToggle) sidebarToggle.addEventListener('click', () => { sidebar.classList.toggle('collapsed'); mainContent.classList.toggle('expanded'); });
+            if (mobileToggle) mobileToggle.addEventListener('click', () => sidebar.classList.toggle('mobile-open'));
+
+            loadAnalyticsData();
+        });
+
+        async function loadAnalyticsData() {
+            try {
+                const res = await fetch('/api/analytics/dashboard', {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('access_token') || ''}` }
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    // Update KPIs
+                    document.getElementById('kpiActive').textContent = data.kpis.active_programs;
+                    document.getElementById('kpiAlerts').textContent = data.kpis.unresolved_alerts;
+                    document.getElementById('kpiCompliance').textContent = `${data.kpis.checkin_compliance}%`;
+                    document.getElementById('kpiAdherence').textContent = `${data.kpis.medication_adherence}%`;
+
+                    // Update Workload
+                    const wlCont = document.getElementById('workloadContainer');
+                    wlCont.innerHTML = '';
+                    data.workload.forEach(wl => {
+                        const wlCard = document.createElement('div');
+                        wlCard.className = 'workload-item';
+                        wlCard.innerHTML = `
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                                <h5 style="font-size:0.85rem;font-weight:600;">${wl.name}</h5>
+                                <span style="font-size:0.75rem;color:var(--text-secondary);">${wl.assigned_patients} Assigned Patients</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;align-items:center;">
+                                <span style="font-size:0.75rem;color:#dc2626;font-weight:600;"><i class="fa-solid fa-triangle-exclamation"></i> ${wl.active_alerts} Active Alerts</span>
+                            </div>
+                        `;
+                        wlCont.appendChild(wlCard);
+                    });
+
+                    // Render operational performance chart
+                    new Chart(document.getElementById('performanceChart').getContext('2d'), {
+                        type: 'bar',
+                        data: {
+                            labels: ['Compliance Rate', 'Medication Adherence', 'Alert Resolution speed'],
+                            datasets: [{
+                                label: 'Engagement Score',
+                                data: [data.kpis.checkin_compliance, data.kpis.medication_adherence, 88],
+                                backgroundColor: ['#2563eb', '#10b981', '#7c3aed'],
+                                borderRadius: 8
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: { legend: { display: false } },
+                            scales: {
+                                y: { min: 0, max: 100, grid: { color: 'rgba(0,0,0,0.04)' } },
+                                x: { grid: { display: false } }
+                            }
+                        }
+                    });
+                }
+            } catch (err) {
+                console.error("Error loading analytics metrics:", err);
+            }
+        }
+    </script>
+</body>
+</html>

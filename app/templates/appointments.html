@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appointments - CareBridge AI</title>
+    <meta name="description" content="View and manage your upcoming medical appointments.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <style>
+        .page-body { padding: 28px; display: flex; flex-direction: column; gap: 24px; }
+        .appt-layout { display: grid; grid-template-columns: 1fr 340px; gap: 20px; }
+        .ac { background: #fff; border-radius: 16px; box-shadow: var(--shadow); }
+        .ac-header { padding: 18px 22px 0; display: flex; align-items: center; justify-content: space-between; }
+        .ac-header h3 { font-size: 0.95rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+        .ac-header h3 i { color: var(--primary); }
+        .ac-body { padding: 18px 22px 22px; }
+
+        .page-hero {
+            background: linear-gradient(135deg, #7c3aed, #6d28d9, #8b5cf6);
+            border-radius: 20px; padding: 26px 32px; color: #fff;
+            display: flex; align-items: center; gap: 24px;
+        }
+        .page-hero i.big { font-size: 2.5rem; opacity: 0.9; }
+        .page-hero h1 { font-size: 1.5rem; font-weight: 800; margin-bottom: 4px; }
+        .page-hero p { font-size: 0.875rem; opacity: 0.88; }
+
+        /* Appointment cards */
+        .appt-card {
+            display: flex; gap: 18px; padding: 20px;
+            border: 1px solid var(--border-color); border-radius: 14px;
+            margin-bottom: 14px; transition: all 0.2s;
+        }
+        .appt-card:last-child { margin-bottom: 0; }
+        .appt-card:hover { border-color: var(--primary); box-shadow: 0 4px 16px rgba(37,99,235,0.1); transform: translateY(-1px); }
+        .appt-date-box {
+            background: var(--primary); color: #fff;
+            border-radius: 12px; padding: 12px 16px; text-align: center; flex-shrink: 0;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            min-width: 64px;
+        }
+        .appt-date-box.past { background: #e2e8f0; color: #64748b; }
+        .appt-date-box .day { font-size: 1.8rem; font-weight: 800; line-height: 1; }
+        .appt-date-box .month { font-size: 0.72rem; font-weight: 600; margin-top: 2px; text-transform: uppercase; }
+        .appt-details { flex: 1; }
+        .appt-details h4 { font-size: 1rem; font-weight: 700; margin-bottom: 6px; }
+        .appt-details .meta { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 10px; }
+        .appt-details .meta span { font-size: 0.8rem; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; }
+        .appt-actions { display: flex; align-items: center; gap: 10px; flex-shrink: 0; flex-direction: column; justify-content: center; }
+
+        /* Mini calendar */
+        .mini-cal { }
+        .cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+        .cal-nav h4 { font-size: 0.95rem; font-weight: 600; }
+        .cal-nav button { background: none; border: 1px solid var(--border-color); border-radius: 8px; width: 30px; height: 30px; cursor: pointer; color: var(--text-secondary); transition: all 0.2s; }
+        .cal-nav button:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+        .cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; }
+        .cal-day-name { text-align: center; font-size: 0.7rem; font-weight: 600; color: var(--text-secondary); padding: 4px 0; }
+        .cal-day { text-align: center; padding: 7px 4px; border-radius: 8px; font-size: 0.82rem; cursor: pointer; transition: all 0.2s; color: var(--text-primary); }
+        .cal-day:hover { background: var(--body-bg); }
+        .cal-day.today { background: var(--primary); color: #fff; font-weight: 700; }
+        .cal-day.has-appt { font-weight: 700; color: var(--primary); position: relative; }
+        .cal-day.has-appt::after { content:''; position:absolute; bottom:2px; left:50%; transform:translateX(-50%); width:4px;height:4px;background:var(--primary);border-radius:50%; }
+        .cal-day.empty { color: transparent; pointer-events: none; }
+
+        /* Quick stats */
+        .stat-row-sm { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
+        .stat-sm { background: var(--body-bg); border-radius: 12px; padding: 14px; text-align: center; }
+        .stat-sm .val { font-size: 1.6rem; font-weight: 800; display: block; }
+        .stat-sm .lbl { font-size: 0.72rem; color: var(--text-secondary); display: block; margin-top: 2px; }
+
+        @media (max-width: 1000px) { .appt-layout { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    {% set active_page = 'appointments' %}
+    {% include '_sidebar.html' %}
+
+    <main class="main-content" id="mainContent">
+        <header class="top-header">
+            <div class="header-left">
+                <button class="mobile-toggle" id="mobileToggle"><i class="fa-solid fa-bars"></i></button>
+                <div class="header-greeting">
+                    <h2>Appointments 📅</h2>
+                    <p>Manage your upcoming medical visits and consultations.</p>
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-primary btn-sm" style="font-size:0.82rem;">
+                    <i class="fa-solid fa-plus"></i> Book Appointment
+                </button>
+            </div>
+        </header>
+
+        <div class="page-body">
+            <!-- Hero -->
+            <div class="page-hero">
+                <i class="fa-solid fa-calendar-check big"></i>
+                <div>
+                    <h1>2 Upcoming Appointments</h1>
+                    <p>Your next appointment is with <strong>Dr. Sarah Johnson</strong> on <strong>Aug 12</strong> at 10:30 AM.</p>
+                </div>
+                <div style="display:flex;gap:12px;margin-left:auto;flex-shrink:0;">
+                    <div style="background:rgba(255,255,255,0.18);padding:12px 18px;border-radius:12px;text-align:center;">
+                        <div style="font-size:1.5rem;font-weight:800;line-height:1;">2</div>
+                        <div style="font-size:0.72rem;opacity:0.85;margin-top:2px;">Upcoming</div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.18);padding:12px 18px;border-radius:12px;text-align:center;">
+                        <div style="font-size:1.5rem;font-weight:800;line-height:1;">5</div>
+                        <div style="font-size:0.72rem;opacity:0.85;margin-top:2px;">Completed</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="appt-layout">
+                <!-- Left: Appointment list -->
+                <div>
+                    <div class="ac">
+                        <div class="ac-header">
+                            <h3><i class="fa-solid fa-list-check"></i> All Appointments</h3>
+                            <div style="display:flex;gap:8px;">
+                                <button class="chip active">Upcoming</button>
+                                <button class="chip">Past</button>
+                            </div>
+                        </div>
+                        <div class="ac-body">
+                            <div class="appt-card">
+                                <div class="appt-date-box"><span class="day">12</span><span class="month">Aug</span></div>
+                                <div class="appt-details">
+                                    <h4>Dr. Sarah Johnson</h4>
+                                    <div class="meta">
+                                        <span><i class="fa-solid fa-user-doctor"></i> Cardiologist</span>
+                                        <span><i class="fa-regular fa-clock"></i> 10:30 AM</span>
+                                        <span><i class="fa-solid fa-location-dot"></i> City Heart Clinic, Block A</span>
+                                    </div>
+                                    <span class="badge badge-primary">Confirmed</span>
+                                    <span class="badge badge-success" style="margin-left:6px;"><i class="fa-solid fa-video"></i> In-Person</span>
+                                </div>
+                                <div class="appt-actions">
+                                    <button class="btn btn-outline btn-sm"><i class="fa-solid fa-phone"></i> Call</button>
+                                    <button class="btn btn-primary btn-sm"><i class="fa-solid fa-location-dot"></i> Map</button>
+                                </div>
+                            </div>
+                            <div class="appt-card">
+                                <div class="appt-date-box"><span class="day">19</span><span class="month">Aug</span></div>
+                                <div class="appt-details">
+                                    <h4>Dr. Raj Patel</h4>
+                                    <div class="meta">
+                                        <span><i class="fa-solid fa-user-doctor"></i> General Physician</span>
+                                        <span><i class="fa-regular fa-clock"></i> 2:00 PM</span>
+                                        <span><i class="fa-solid fa-location-dot"></i> Community Health Center</span>
+                                    </div>
+                                    <span class="badge badge-secondary">Pending Confirmation</span>
+                                </div>
+                                <div class="appt-actions">
+                                    <button class="btn btn-primary btn-sm">Confirm</button>
+                                </div>
+                            </div>
+                            <div style="text-align:center;padding:16px 0;color:var(--text-secondary);font-size:0.85rem;">
+                                <i class="fa-solid fa-calendar-check" style="font-size:1.5rem;display:block;margin-bottom:8px;opacity:0.3;"></i>
+                                No more upcoming appointments.
+                                <br><a href="#" style="color:var(--primary);font-weight:500;margin-top:6px;display:inline-block;">Book a new appointment →</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Calendar + stats -->
+                <div style="display:flex;flex-direction:column;gap:20px;">
+                    <div class="ac">
+                        <div class="ac-header"><h3><i class="fa-regular fa-calendar"></i> August 2026</h3>
+                            <div style="display:flex;gap:4px;">
+                                <button onclick="void(0)">‹</button>
+                                <button onclick="void(0)">›</button>
+                            </div>
+                        </div>
+                        <div class="ac-body" style="padding-top:14px;">
+                            <div class="mini-cal">
+                                <div class="cal-grid">
+                                    <div class="cal-day-name">S</div><div class="cal-day-name">M</div><div class="cal-day-name">T</div><div class="cal-day-name">W</div><div class="cal-day-name">T</div><div class="cal-day-name">F</div><div class="cal-day-name">S</div>
+                                    <div class="cal-day empty"></div><div class="cal-day empty"></div><div class="cal-day empty"></div><div class="cal-day empty"></div><div class="cal-day empty"></div>
+                                    <div class="cal-day">1</div><div class="cal-day">2</div>
+                                    <div class="cal-day">3</div><div class="cal-day">4</div><div class="cal-day">5</div><div class="cal-day">6</div><div class="cal-day">7</div><div class="cal-day">8</div><div class="cal-day">9</div>
+                                    <div class="cal-day today">10</div><div class="cal-day">11</div><div class="cal-day has-appt">12</div><div class="cal-day">13</div><div class="cal-day">14</div><div class="cal-day">15</div><div class="cal-day">16</div>
+                                    <div class="cal-day">17</div><div class="cal-day">18</div><div class="cal-day has-appt">19</div><div class="cal-day">20</div><div class="cal-day">21</div><div class="cal-day">22</div><div class="cal-day">23</div>
+                                    <div class="cal-day">24</div><div class="cal-day">25</div><div class="cal-day">26</div><div class="cal-day">27</div><div class="cal-day">28</div><div class="cal-day">29</div><div class="cal-day">30</div>
+                                    <div class="cal-day">31</div>
+                                </div>
+                            </div>
+                            <div class="stat-row-sm">
+                                <div class="stat-sm"><span class="val" style="color:var(--primary);">2</span><span class="lbl">Upcoming</span></div>
+                                <div class="stat-sm"><span class="val" style="color:#16a34a;">5</span><span class="lbl">Completed</span></div>
+                                <div class="stat-sm"><span class="val" style="color:#f59e0b;">1</span><span class="lbl">Pending</span></div>
+                                <div class="stat-sm"><span class="val" style="color:#ef4444;">0</span><span class="lbl">Missed</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ac">
+                        <div class="ac-header"><h3><i class="fa-solid fa-bell"></i> Reminders</h3></div>
+                        <div class="ac-body">
+                            <div style="font-size:0.83rem;display:flex;flex-direction:column;gap:10px;">
+                                <div style="padding:12px;background:#eff6ff;border-radius:10px;border-left:3px solid #2563eb;">
+                                    <strong style="color:#1d4ed8;">Aug 12</strong> — Bring your medication list and discharge summary to the cardiology appointment.
+                                </div>
+                                <div style="padding:12px;background:#fef3c7;border-radius:10px;border-left:3px solid #f59e0b;">
+                                    <strong style="color:#b45309;">Aug 19</strong> — Confirm appointment with Dr. Raj Patel before Aug 14.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const mobileToggle = document.getElementById('mobileToggle');
+            const mainContent = document.getElementById('mainContent');
+            if (sidebarToggle) sidebarToggle.addEventListener('click', () => { sidebar.classList.toggle('collapsed'); mainContent.classList.toggle('expanded'); });
+            if (mobileToggle) mobileToggle.addEventListener('click', () => sidebar.classList.toggle('mobile-open'));
+        });
+    </script>
+</body>
+</html>

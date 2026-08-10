@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareBridge AI - Post-Discharge Recovery Companion</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container nav-container">
+            <a href="/" class="logo">
+                <i class="fa-solid fa-heart-pulse"></i> CareBridge AI
+            </a>
+            <ul class="nav-links">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#features">Features</a></li>
+                <li><a href="#how-it-works">How It Works</a></li>
+                <li><a href="#pricing">Pricing</a></li>
+                <li><a href="#about">About</a></li>
+            </ul>
+            <div class="nav-buttons">
+                <a href="/login" class="btn btn-outline">Login</a>
+                <a href="/signup" class="btn btn-primary">Sign Up</a>
+            </div>
+            <div class="mobile-menu-btn">
+                <i class="fa-solid fa-bars"></i>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header id="home" class="hero">
+        <div class="container hero-container">
+            <div class="hero-content">
+                <div class="hero-badge">AI-Powered Healthcare Startup</div>
+                <h1 class="hero-title">Recover Better. <br><span>Stay Connected.</span> <br>Stay Safe.</h1>
+                <p class="hero-description">
+                    CareBridge AI transforms hospital discharge summaries into personalized multilingual recovery plans, medication reminders, appointment tracking, and AI-powered recovery guidance.
+                </p>
+                <div class="hero-actions">
+                    <a href="/signup" class="btn btn-primary btn-large">Get Started</a>
+                    <a href="#demo" class="btn btn-secondary btn-large"><i class="fa-solid fa-play"></i> Watch Demo</a>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <h3>10k+</h3>
+                        <p>Patients Supported</p>
+                    </div>
+                    <div class="stat-item">
+                        <h3>95%</h3>
+                        <p>Medication Adherence</p>
+                    </div>
+                    <div class="stat-item">
+                        <h3>40%</h3>
+                        <p>Reduced Readmissions</p>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-visuals">
+                <!-- Floating Illustration / Glassmorphism Elements -->
+                <div class="glass-card visual-card-1">
+                    <i class="fa-solid fa-pills card-icon"></i>
+                    <div>
+                        <h4>Medication Reminder</h4>
+                        <p>Time for Paracetamol</p>
+                    </div>
+                </div>
+                <div class="glass-card visual-card-2">
+                    <i class="fa-solid fa-notes-medical card-icon"></i>
+                    <div>
+                        <h4>Recovery Score</h4>
+                        <div class="progress-bar"><div class="progress" style="width: 85%;"></div></div>
+                    </div>
+                </div>
+                <div class="hero-image-placeholder">
+                    <div class="pulse-ring"></div>
+                    <i class="fa-solid fa-user-doctor main-hero-icon"></i>
+                </div>
+            </div>
+        </div>
+        <div class="particle-background" id="particles-js"></div>
+    </header>
+
+    <!-- Features Section -->
+    <section id="features" class="features section">
+        <div class="container">
+            <div class="section-header text-center">
+                <h2>Powerful AI Features</h2>
+                <p>Everything you need for a smooth and safe recovery journey.</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fa-solid fa-file-medical"></i></div>
+                    <h3>Smart Discharge Analysis</h3>
+                    <p>Upload your discharge summary and our AI extracts your medications, diet, and recovery timeline instantly.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fa-solid fa-language"></i></div>
+                    <h3>Multilingual Support</h3>
+                    <p>Access your recovery plan and chat with our AI assistant in 8+ regional languages.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fa-solid fa-robot"></i></div>
+                    <h3>AI Health Assistant</h3>
+                    <p>24/7 conversational AI to answer your post-discharge queries and track your symptoms.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fa-solid fa-bell"></i></div>
+                    <h3>Automated Reminders</h3>
+                    <p>Never miss a dose or appointment with smart notifications for you and your caregivers.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container footer-container">
+            <div class="footer-brand">
+                <a href="/" class="logo"><i class="fa-solid fa-heart-pulse"></i> CareBridge AI</a>
+                <p>Empowering patients and connecting caregivers through AI-driven post-discharge care.</p>
+            </div>
+            <div class="footer-links">
+                <h4>Product</h4>
+                <ul>
+                    <li><a href="#">Features</a></li>
+                    <li><a href="#">Pricing</a></li>
+                    <li><a href="#">Security</a></li>
+                </ul>
+            </div>
+            <div class="footer-links">
+                <h4>Company</h4>
+                <ul>
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#">Careers</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </div>
+            <div class="footer-newsletter">
+                <h4>Subscribe</h4>
+                <div class="newsletter-form">
+                    <input type="email" placeholder="Enter email address">
+                    <button class="btn btn-primary">Subscribe</button>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 CareBridge AI. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Family Portal - CareBridge AI</title>
+    <meta name="description" content="Share your recovery progress with family members and caregivers.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <style>
+        .page-body { padding: 28px; display: flex; flex-direction: column; gap: 24px; }
+        .fc { background: #fff; border-radius: 16px; box-shadow: var(--shadow); }
+        .fc-header { padding: 18px 22px 0; display: flex; align-items: center; justify-content: space-between; }
+        .fc-header h3 { font-size: 0.95rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+        .fc-header h3 i { color: var(--primary); }
+        .fc-body { padding: 18px 22px 22px; }
+        .family-layout { display: grid; grid-template-columns: 1fr 320px; gap: 20px; }
+
+        .page-hero {
+            background: linear-gradient(135deg, #be185d, #9d174d, #ec4899);
+            border-radius: 20px; padding: 26px 32px; color: #fff;
+            display: flex; align-items: center; gap: 24px;
+        }
+        .page-hero i.big { font-size: 2.5rem; opacity: 0.9; }
+        .page-hero h1 { font-size: 1.5rem; font-weight: 800; margin-bottom: 4px; }
+        .page-hero p { font-size: 0.875rem; opacity: 0.88; }
+
+        .member-card {
+            display: flex; align-items: center; gap: 16px; padding: 18px;
+            border: 1px solid var(--border-color); border-radius: 14px; margin-bottom: 12px; transition: all 0.2s;
+        }
+        .member-card:last-child { margin-bottom: 0; }
+        .member-card:hover { border-color: var(--primary); box-shadow: 0 4px 12px rgba(37,99,235,0.08); }
+        .member-avatar {
+            width: 48px; height: 48px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem; font-weight: 700; color: #fff; flex-shrink: 0;
+        }
+        .member-info { flex: 1; }
+        .member-info h4 { font-size: 0.95rem; font-weight: 600; margin-bottom: 2px; }
+        .member-info p { font-size: 0.78rem; color: var(--text-secondary); }
+        .member-actions { display: flex; gap: 8px; }
+
+        .toggle-access {
+            display: flex; align-items: center; gap: 10px;
+            font-size: 0.82rem; color: var(--text-secondary);
+        }
+        .toggle {
+            width: 36px; height: 20px; background: var(--border-color); border-radius: 20px;
+            position: relative; cursor: pointer; transition: background 0.2s; border: none;
+        }
+        .toggle.on { background: #22c55e; }
+        .toggle::after {
+            content: ''; position: absolute; top: 3px; left: 3px;
+            width: 14px; height: 14px; background: #fff; border-radius: 50%; transition: transform 0.2s;
+        }
+        .toggle.on::after { transform: translateX(16px); }
+
+        .activity-item {
+            display: flex; gap: 12px; padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .activity-item:last-child { border-bottom: none; }
+        .act-avatar { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 700; color: #fff; flex-shrink: 0; }
+        .act-body { flex: 1; }
+        .act-body p { font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5; }
+        .act-body p strong { color: var(--text-primary); }
+        .act-time { font-size: 0.7rem; color: var(--text-secondary); margin-top: 3px; display: block; }
+
+        .share-card {
+            background: linear-gradient(135deg, #eff6ff, #f5f3ff); border-radius: 14px; padding: 20px; text-align: center;
+            border: 1px dashed #c7d2fe;
+        }
+        .share-card i { font-size: 2rem; color: #6366f1; margin-bottom: 12px; }
+        .share-card h4 { font-size: 0.95rem; font-weight: 600; margin-bottom: 6px; }
+        .share-card p { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 14px; }
+
+        @media (max-width: 1000px) { .family-layout { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    {% set active_page = 'family' %}
+    {% include '_sidebar.html' %}
+
+    <main class="main-content" id="mainContent">
+        <header class="top-header">
+            <div class="header-left">
+                <button class="mobile-toggle" id="mobileToggle"><i class="fa-solid fa-bars"></i></button>
+                <div class="header-greeting">
+                    <h2>Family Portal 👨‍👩‍👧</h2>
+                    <p>Share your recovery progress with loved ones and caregivers.</p>
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-primary btn-sm" style="font-size:0.82rem;"><i class="fa-solid fa-user-plus"></i> Invite Member</button>
+            </div>
+        </header>
+
+        <div class="page-body">
+            <div class="page-hero">
+                <i class="fa-solid fa-people-group big"></i>
+                <div>
+                    <h1>3 Family Members Connected</h1>
+                    <p>Your family can view your recovery progress, medication schedule, and upcoming appointments in real-time.</p>
+                </div>
+            </div>
+
+            <div class="family-layout">
+                <div>
+                    <div class="fc" style="margin-bottom:20px;">
+                        <div class="fc-header"><h3><i class="fa-solid fa-users"></i> Connected Members</h3></div>
+                        <div class="fc-body">
+                            <div class="member-card">
+                                <div class="member-avatar" style="background:linear-gradient(135deg,#2563eb,#7c3aed);">A</div>
+                                <div class="member-info"><h4>Ananya (Wife)</h4><p><i class="fa-solid fa-envelope" style="font-size:0.7rem;"></i> ananya@email.com · Primary Caregiver</p></div>
+                                <div style="display:flex;align-items:center;gap:12px;">
+                                    <div class="toggle-access"><span>Full Access</span><button class="toggle on"></button></div>
+                                    <button class="btn btn-outline btn-sm"><i class="fa-solid fa-ellipsis"></i></button>
+                                </div>
+                            </div>
+                            <div class="member-card">
+                                <div class="member-avatar" style="background:linear-gradient(135deg,#10b981,#0891b2);">R</div>
+                                <div class="member-info"><h4>Ravi (Son)</h4><p><i class="fa-solid fa-envelope" style="font-size:0.7rem;"></i> ravi@email.com · Family</p></div>
+                                <div style="display:flex;align-items:center;gap:12px;">
+                                    <div class="toggle-access"><span>View Only</span><button class="toggle on"></button></div>
+                                    <button class="btn btn-outline btn-sm"><i class="fa-solid fa-ellipsis"></i></button>
+                                </div>
+                            </div>
+                            <div class="member-card">
+                                <div class="member-avatar" style="background:linear-gradient(135deg,#f59e0b,#ef4444);">P</div>
+                                <div class="member-info"><h4>Priya (Daughter)</h4><p><i class="fa-solid fa-envelope" style="font-size:0.7rem;"></i> priya@email.com · Family</p></div>
+                                <div style="display:flex;align-items:center;gap:12px;">
+                                    <div class="toggle-access"><span>View Only</span><button class="toggle on"></button></div>
+                                    <button class="btn btn-outline btn-sm"><i class="fa-solid fa-ellipsis"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="fc">
+                        <div class="fc-header"><h3><i class="fa-solid fa-eye"></i> What Family Can See</h3></div>
+                        <div class="fc-body">
+                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                                <div style="padding:14px;background:var(--body-bg);border-radius:12px;display:flex;align-items:center;gap:10px;font-size:0.83rem;">
+                                    <i class="fa-solid fa-gauge-high" style="color:var(--primary);"></i> Recovery Score
+                                    <span class="badge badge-success" style="margin-left:auto;">Visible</span>
+                                </div>
+                                <div style="padding:14px;background:var(--body-bg);border-radius:12px;display:flex;align-items:center;gap:10px;font-size:0.83rem;">
+                                    <i class="fa-solid fa-pills" style="color:var(--primary);"></i> Medications
+                                    <span class="badge badge-success" style="margin-left:auto;">Visible</span>
+                                </div>
+                                <div style="padding:14px;background:var(--body-bg);border-radius:12px;display:flex;align-items:center;gap:10px;font-size:0.83rem;">
+                                    <i class="fa-solid fa-calendar" style="color:var(--primary);"></i> Appointments
+                                    <span class="badge badge-success" style="margin-left:auto;">Visible</span>
+                                </div>
+                                <div style="padding:14px;background:var(--body-bg);border-radius:12px;display:flex;align-items:center;gap:10px;font-size:0.83rem;">
+                                    <i class="fa-solid fa-clipboard" style="color:var(--primary);"></i> Check-ins
+                                    <span class="badge badge-success" style="margin-left:auto;">Visible</span>
+                                </div>
+                                <div style="padding:14px;background:var(--body-bg);border-radius:12px;display:flex;align-items:center;gap:10px;font-size:0.83rem;">
+                                    <i class="fa-solid fa-message" style="color:#94a3b8;"></i> Chat History
+                                    <span class="badge badge-secondary" style="margin-left:auto;">Hidden</span>
+                                </div>
+                                <div style="padding:14px;background:var(--body-bg);border-radius:12px;display:flex;align-items:center;gap:10px;font-size:0.83rem;">
+                                    <i class="fa-solid fa-file" style="color:#94a3b8;"></i> Documents
+                                    <span class="badge badge-secondary" style="margin-left:auto;">Hidden</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display:flex;flex-direction:column;gap:20px;">
+                    <div class="share-card">
+                        <i class="fa-solid fa-share-nodes"></i>
+                        <h4>Share Access Link</h4>
+                        <p>Invite a new family member to view your health dashboard</p>
+                        <button class="btn btn-primary" style="width:100%;font-size:0.85rem;"><i class="fa-solid fa-copy"></i> Copy Invite Link</button>
+                    </div>
+
+                    <div class="fc">
+                        <div class="fc-header"><h3><i class="fa-solid fa-list-check"></i> Family Activity</h3></div>
+                        <div class="fc-body">
+                            <div class="activity-item">
+                                <div class="act-avatar" style="background:linear-gradient(135deg,#2563eb,#7c3aed);">A</div>
+                                <div class="act-body"><p><strong>Ananya</strong> viewed your medication schedule.</p><span class="act-time">2 hours ago</span></div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="act-avatar" style="background:linear-gradient(135deg,#10b981,#0891b2);">R</div>
+                                <div class="act-body"><p><strong>Ravi</strong> checked your recovery score.</p><span class="act-time">5 hours ago</span></div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="act-avatar" style="background:linear-gradient(135deg,#f59e0b,#ef4444);">P</div>
+                                <div class="act-body"><p><strong>Priya</strong> viewed upcoming appointments.</p><span class="act-time">Yesterday</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="fc">
+                        <div class="fc-header"><h3><i class="fa-solid fa-paper-plane"></i> Send Update</h3></div>
+                        <div class="fc-body">
+                            <textarea style="width:100%;padding:10px 12px;border:1.5px solid var(--border-color);border-radius:10px;font-size:0.83rem;resize:none;outline:none;font-family:'Poppins',sans-serif;background:var(--body-bg);height:80px;" placeholder="Send a health update to your family..."></textarea>
+                            <button class="btn btn-primary btn-full" style="margin-top:10px;font-size:0.85rem;"><i class="fa-solid fa-paper-plane"></i> Send to Family</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const mobileToggle = document.getElementById('mobileToggle');
+            const mainContent = document.getElementById('mainContent');
+            if (sidebarToggle) sidebarToggle.addEventListener('click', () => { sidebar.classList.toggle('collapsed'); mainContent.classList.toggle('expanded'); });
+            if (mobileToggle) mobileToggle.addEventListener('click', () => sidebar.classList.toggle('mobile-open'));
+            document.querySelectorAll('.toggle').forEach(t => t.addEventListener('click', () => t.classList.toggle('on')));
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recovery Plan - CareBridge AI</title>
+    <meta name="description" content="Your personalized post-discharge recovery plan and milestones.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <style>
+        .page-body { padding: 28px; display: flex; flex-direction: column; gap: 24px; }
+        .page-hero {
+            background: linear-gradient(135deg, #0f766e, #0d9488, #14b8a6);
+            border-radius: 20px; padding: 28px 32px; color: #fff;
+            display: flex; align-items: center; justify-content: space-between; gap: 20px;
+            position: relative; overflow: hidden;
+        }
+        .page-hero::before {
+            content: ''; position: absolute; top: -40px; right: -40px;
+            width: 160px; height: 160px; background: rgba(255,255,255,0.07); border-radius: 50%;
+        }
+        .page-hero h1 { font-size: 1.6rem; font-weight: 800; margin-bottom: 6px; }
+        .page-hero p { font-size: 0.875rem; opacity: 0.88; }
+        .hero-badge {
+            background: rgba(255,255,255,0.2); backdrop-filter: blur(6px);
+            border-radius: 14px; padding: 14px 20px; text-align: center; flex-shrink: 0;
+        }
+        .hero-badge .big { font-size: 2rem; font-weight: 800; line-height: 1; display: block; }
+        .hero-badge .lbl { font-size: 0.75rem; opacity: 0.85; display: block; margin-top: 2px; }
+
+        .section-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .section-grid-2 { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+
+        .rp-card { background: #fff; border-radius: 16px; box-shadow: var(--shadow); overflow: hidden; }
+        .rp-card-header {
+            padding: 18px 22px 0; display: flex; align-items: center;
+            justify-content: space-between;
+        }
+        .rp-card-header h3 { font-size: 0.95rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+        .rp-card-header h3 i { color: var(--primary); }
+        .rp-card-body { padding: 18px 22px 22px; }
+
+        /* Timeline */
+        .milestone-list { display: flex; flex-direction: column; gap: 0; }
+        .milestone-item {
+            display: flex; gap: 16px; padding: 14px 0; position: relative;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .milestone-item:last-child { border-bottom: none; }
+        .ms-icon {
+            width: 44px; height: 44px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1rem; flex-shrink: 0;
+        }
+        .ms-icon.done { background: #dcfce7; color: #16a34a; }
+        .ms-icon.active { background: #eff6ff; color: #2563eb; }
+        .ms-icon.upcoming { background: #f1f5f9; color: #94a3b8; }
+        .ms-body { flex: 1; }
+        .ms-body h5 { font-size: 0.9rem; font-weight: 600; margin-bottom: 3px; }
+        .ms-body p { font-size: 0.78rem; color: var(--text-secondary); }
+        .ms-day { font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); white-space: nowrap; padding-top: 2px; }
+
+        /* Goal cards */
+        .goal-card {
+            background: var(--body-bg); border-radius: 14px;
+            padding: 18px; display: flex; flex-direction: column; gap: 12px;
+        }
+        .goal-icon-row { display: flex; align-items: center; gap: 10px; }
+        .goal-icon {
+            width: 42px; height: 42px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0;
+        }
+        .goal-title { font-size: 0.9rem; font-weight: 600; }
+        .goal-tasks { display: flex; flex-direction: column; gap: 8px; }
+        .goal-task {
+            display: flex; align-items: center; gap: 10px;
+            font-size: 0.82rem; color: var(--text-secondary);
+        }
+        .goal-task.done { color: #16a34a; text-decoration: line-through; opacity: 0.7; }
+        .goal-task i { font-size: 0.9rem; flex-shrink: 0; }
+        .goal-task.done i { color: #16a34a; }
+
+        /* Progress bar */
+        .prog-bar-wrap { display: flex; flex-direction: column; gap: 12px; }
+        .prog-item { }
+        .prog-label { display: flex; justify-content: space-between; font-size: 0.82rem; font-weight: 500; margin-bottom: 6px; }
+        .prog-bar { height: 8px; background: var(--border-color); border-radius: 50px; overflow: hidden; }
+        .prog-fill { height: 100%; border-radius: 50px; transition: width 1s ease; }
+
+        /* Tips */
+        .tip-list { display: flex; flex-direction: column; gap: 12px; }
+        .tip-item {
+            display: flex; gap: 12px; padding: 14px;
+            background: var(--body-bg); border-radius: 12px;
+            border-left: 3px solid var(--primary);
+        }
+        .tip-item i { color: var(--primary); font-size: 1rem; margin-top: 2px; flex-shrink: 0; }
+        .tip-item p { font-size: 0.83rem; color: var(--text-secondary); line-height: 1.55; }
+        .tip-item strong { color: var(--text-primary); }
+
+        @media (max-width: 1100px) { .section-grid { grid-template-columns: 1fr 1fr; } .section-grid-2 { grid-template-columns: 1fr; } }
+        @media (max-width: 720px) { .section-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    {% set active_page = 'recovery' %}
+    {% include '_sidebar.html' %}
+
+    <main class="main-content" id="mainContent">
+        <header class="top-header">
+            <div class="header-left">
+                <button class="mobile-toggle" id="mobileToggle"><i class="fa-solid fa-bars"></i></button>
+                <div class="header-greeting">
+                    <h2>Recovery Plan <span style="color:var(--primary)">📋</span></h2>
+                    <p>Your personalized post-discharge recovery roadmap.</p>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="header-date">
+                    <i class="fa-regular fa-calendar"></i>
+                    <span id="currentDate"></span>
+                </div>
+            </div>
+        </header>
+
+        <div class="page-body">
+            <!-- Hero banner -->
+            <div class="page-hero">
+                <div>
+                    <h1>Week 2 of Recovery</h1>
+                    <p>You're making excellent progress! Stay consistent with your daily routine and medication schedule.</p>
+                    <div style="display:flex;gap:12px;margin-top:16px;flex-wrap:wrap;">
+                        <span style="background:rgba(255,255,255,0.2);padding:6px 14px;border-radius:50px;font-size:0.8rem;"><i class="fa-solid fa-fire-flame-curved"></i> 12 Day Streak</span>
+                        <span style="background:rgba(255,255,255,0.2);padding:6px 14px;border-radius:50px;font-size:0.8rem;"><i class="fa-solid fa-star"></i> 78% Recovery Score</span>
+                    </div>
+                </div>
+                <div style="display:flex;gap:16px;flex-shrink:0;">
+                    <div class="hero-badge"><span class="big">12</span><span class="lbl">Days Done</span></div>
+                    <div class="hero-badge"><span class="big">18</span><span class="lbl">Days Left</span></div>
+                </div>
+            </div>
+
+            <!-- Weekly Goals -->
+            <div>
+                <h3 style="font-size:1rem;font-weight:700;margin-bottom:14px;color:var(--text-primary);">This Week's Goals</h3>
+                <div class="section-grid">
+                    <div class="goal-card">
+                        <div class="goal-icon-row">
+                            <div class="goal-icon" style="background:#eff6ff;color:#2563eb;"><i class="fa-solid fa-dumbbell"></i></div>
+                            <span class="goal-title">Exercise</span>
+                        </div>
+                        <div class="goal-tasks">
+                            <div class="goal-task done"><i class="fa-solid fa-circle-check"></i> 15-min morning walk (Mon)</div>
+                            <div class="goal-task done"><i class="fa-solid fa-circle-check"></i> Gentle stretching (Tue)</div>
+                            <div class="goal-task"><i class="fa-regular fa-circle"></i> 20-min walk (Today)</div>
+                            <div class="goal-task"><i class="fa-regular fa-circle"></i> Light yoga session (Thu)</div>
+                        </div>
+                    </div>
+                    <div class="goal-card">
+                        <div class="goal-icon-row">
+                            <div class="goal-icon" style="background:#f0fdf4;color:#16a34a;"><i class="fa-solid fa-apple-whole"></i></div>
+                            <span class="goal-title">Diet & Hydration</span>
+                        </div>
+                        <div class="goal-tasks">
+                            <div class="goal-task done"><i class="fa-solid fa-circle-check"></i> 2L water daily (5/7 days)</div>
+                            <div class="goal-task done"><i class="fa-solid fa-circle-check"></i> High-fiber breakfast</div>
+                            <div class="goal-task done"><i class="fa-solid fa-circle-check"></i> Avoid salty foods</div>
+                            <div class="goal-task"><i class="fa-regular fa-circle"></i> Omega-3 rich dinner</div>
+                        </div>
+                    </div>
+                    <div class="goal-card">
+                        <div class="goal-icon-row">
+                            <div class="goal-icon" style="background:#f5f3ff;color:#7c3aed;"><i class="fa-solid fa-moon"></i></div>
+                            <span class="goal-title">Rest & Sleep</span>
+                        </div>
+                        <div class="goal-tasks">
+                            <div class="goal-task done"><i class="fa-solid fa-circle-check"></i> 8hrs sleep (Mon, Tue)</div>
+                            <div class="goal-task done"><i class="fa-solid fa-circle-check"></i> Afternoon nap (30 min)</div>
+                            <div class="goal-task"><i class="fa-regular fa-circle"></i> Screen-off by 10 PM</div>
+                            <div class="goal-task"><i class="fa-regular fa-circle"></i> Relaxation breathing</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Milestones + Progress -->
+            <div class="section-grid-2">
+                <div class="rp-card">
+                    <div class="rp-card-header">
+                        <h3><i class="fa-solid fa-flag-checkered"></i> Recovery Milestones</h3>
+                        <span class="badge badge-primary">4 / 7 Done</span>
+                    </div>
+                    <div class="rp-card-body">
+                        <div class="milestone-list">
+                            <div class="milestone-item">
+                                <div class="ms-icon done"><i class="fa-solid fa-check"></i></div>
+                                <div class="ms-body"><h5>Discharge & Orientation</h5><p>Reviewed discharge summary and medications with care team.</p></div>
+                                <span class="ms-day">Day 1</span>
+                            </div>
+                            <div class="milestone-item">
+                                <div class="ms-icon done"><i class="fa-solid fa-check"></i></div>
+                                <div class="ms-body"><h5>First Follow-up Visit</h5><p>Completed first outpatient visit, vitals checked.</p></div>
+                                <span class="ms-day">Day 3</span>
+                            </div>
+                            <div class="milestone-item">
+                                <div class="ms-icon done"><i class="fa-solid fa-check"></i></div>
+                                <div class="ms-body"><h5>Start Light Activity</h5><p>Began 10-minute daily walks, completed 5 consecutive days.</p></div>
+                                <span class="ms-day">Day 7</span>
+                            </div>
+                            <div class="milestone-item">
+                                <div class="ms-icon done"><i class="fa-solid fa-check"></i></div>
+                                <div class="ms-body"><h5>Medication Adherence Streak</h5><p>10 days of 100% medication adherence achieved.</p></div>
+                                <span class="ms-day">Day 10</span>
+                            </div>
+                            <div class="milestone-item">
+                                <div class="ms-icon active"><i class="fa-solid fa-spinner fa-spin-pulse"></i></div>
+                                <div class="ms-body"><h5>Resume Daily Activities</h5><p>Return to light household tasks and social interactions.</p></div>
+                                <span class="ms-day">Day 14</span>
+                            </div>
+                            <div class="milestone-item">
+                                <div class="ms-icon upcoming"><i class="fa-solid fa-lock"></i></div>
+                                <div class="ms-body"><h5>Cardiology Follow-up</h5><p>Review heart function, ECG, and medication adjustments.</p></div>
+                                <span class="ms-day">Day 21</span>
+                            </div>
+                            <div class="milestone-item">
+                                <div class="ms-icon upcoming"><i class="fa-solid fa-lock"></i></div>
+                                <div class="ms-body"><h5>Full Recovery Clearance</h5><p>Final clearance from physician to resume normal activities.</p></div>
+                                <span class="ms-day">Day 30</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display:flex;flex-direction:column;gap:20px;">
+                    <div class="rp-card">
+                        <div class="rp-card-header"><h3><i class="fa-solid fa-chart-simple"></i> Recovery Progress</h3></div>
+                        <div class="rp-card-body">
+                            <div class="prog-bar-wrap">
+                                <div class="prog-item">
+                                    <div class="prog-label"><span>Overall Recovery</span><span>78%</span></div>
+                                    <div class="prog-bar"><div class="prog-fill" style="width:78%;background:linear-gradient(90deg,#2563eb,#7c3aed);"></div></div>
+                                </div>
+                                <div class="prog-item">
+                                    <div class="prog-label"><span>Medication Adherence</span><span>92%</span></div>
+                                    <div class="prog-bar"><div class="prog-fill" style="width:92%;background:#22c55e;"></div></div>
+                                </div>
+                                <div class="prog-item">
+                                    <div class="prog-label"><span>Physical Activity</span><span>65%</span></div>
+                                    <div class="prog-bar"><div class="prog-fill" style="width:65%;background:#f59e0b;"></div></div>
+                                </div>
+                                <div class="prog-item">
+                                    <div class="prog-label"><span>Diet Goals</span><span>80%</span></div>
+                                    <div class="prog-bar"><div class="prog-fill" style="width:80%;background:#0d9488;"></div></div>
+                                </div>
+                                <div class="prog-item">
+                                    <div class="prog-label"><span>Sleep Quality</span><span>85%</span></div>
+                                    <div class="prog-bar"><div class="prog-fill" style="width:85%;background:#8b5cf6;"></div></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="rp-card">
+                        <div class="rp-card-header"><h3><i class="fa-solid fa-lightbulb"></i> Recovery Tips</h3></div>
+                        <div class="rp-card-body">
+                            <div class="tip-list">
+                                <div class="tip-item">
+                                    <i class="fa-solid fa-droplet"></i>
+                                    <p><strong>Stay Hydrated:</strong> Drink at least 2 liters of water daily to help your body heal faster.</p>
+                                </div>
+                                <div class="tip-item">
+                                    <i class="fa-solid fa-heart-pulse"></i>
+                                    <p><strong>Monitor Vitals:</strong> Check BP and pulse daily and log them for your doctor visits.</p>
+                                </div>
+                                <div class="tip-item">
+                                    <i class="fa-solid fa-ban-smoking"></i>
+                                    <p><strong>Avoid Smoking:</strong> Smoking significantly slows cardiac recovery and healing.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const dateEl = document.getElementById('currentDate');
+            if (dateEl) dateEl.textContent = new Date().toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const mobileToggle = document.getElementById('mobileToggle');
+            const mainContent = document.getElementById('mainContent');
+            if (sidebarToggle) sidebarToggle.addEventListener('click', () => { sidebar.classList.toggle('collapsed'); mainContent.classList.toggle('expanded'); });
+            if (mobileToggle) mobileToggle.addEventListener('click', () => sidebar.classList.toggle('mobile-open'));
+        });
+    </script>
+</body>
+</html>

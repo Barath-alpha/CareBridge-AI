@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Vault - CareBridge AI</title>
+    <meta name="description" content="Secure health document vault.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <style>
+        .page-body { padding: 28px; display: flex; flex-direction: column; gap: 24px; }
+        .vc { background: #fff; border-radius: 16px; box-shadow: var(--shadow); }
+        .vc-header { padding: 18px 22px 0; display: flex; align-items: center; justify-content: space-between; }
+        .vc-header h3 { font-size: 0.95rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+        .vc-header h3 i { color: var(--primary); }
+        .vc-body { padding: 18px 22px 22px; }
+        
+        .vault-layout { display: grid; grid-template-columns: 1fr 300px; gap: 20px; }
+        
+        .drop-zone {
+            border: 2px dashed #cbd5e1; border-radius: 14px; padding: 24px; text-align: center;
+            background: var(--body-bg); cursor: pointer; transition: all 0.2s;
+        }
+        .drop-zone:hover { border-color: var(--primary); background: var(--primary-light); }
+        .drop-zone i { font-size: 2rem; color: var(--text-secondary); margin-bottom: 8px; }
+        .drop-zone p { font-size: 0.8rem; color: var(--text-secondary); }
+
+        .doc-item {
+            display: flex; align-items: center; gap: 14px; padding: 14px;
+            border: 1px solid var(--border-color); border-radius: 12px; margin-bottom: 10px;
+        }
+        .doc-item:last-child { margin-bottom: 0; }
+        .doc-item i.file-icon { font-size: 1.5rem; color: #ef4444; flex-shrink: 0; }
+        .doc-info { flex: 1; }
+        .doc-info h5 { font-size: 0.88rem; font-weight: 600; margin-bottom: 2px; }
+        .doc-info p { font-size: 0.74rem; color: var(--text-secondary); }
+
+        .toggle-switch {
+            position: relative; display: inline-block; width: 34px; height: 20px;
+        }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; inset: 0; background-color: #cbd5e1;
+            transition: .3s; border-radius: 20px;
+        }
+        .slider:before {
+            position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px;
+            background-color: white; transition: .3s; border-radius: 50%;
+        }
+        input:checked + .slider { background-color: #22c55e; }
+        input:checked + .slider:before { transform: translateX(14px); }
+
+        @media (max-width: 1000px) { .vault-layout { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    {% set active_page = 'vault' %}
+    {% include '_sidebar.html' %}
+
+    <main class="main-content" id="mainContent">
+        <header class="top-header">
+            <div class="header-left">
+                <button class="mobile-toggle" id="mobileToggle"><i class="fa-solid fa-bars"></i></button>
+                <div class="header-greeting">
+                    <h2>Document Vault 🔒</h2>
+                    <p>Organize, download, and control access permissions to your healthcare files.</p>
+                </div>
+            </div>
+        </header>
+
+        <div class="page-body">
+            <div class="vault-layout">
+                <!-- Left: Vault Documents List -->
+                <div class="vc">
+                    <div class="vc-header">
+                        <h3><i class="fa-solid fa-folder-open"></i> Vault Documents</h3>
+                        <span class="badge badge-primary" id="docCount">0 Files</span>
+                    </div>
+                    <div class="vc-body" id="documentsContainer">
+                        <!-- Dynamic documents lists -->
+                    </div>
+                </div>
+
+                <!-- Right: Secure upload controls -->
+                <div style="display:flex;flex-direction:column;gap:20px;">
+                    <div class="vc">
+                        <div class="vc-header"><h3><i class="fa-solid fa-cloud-arrow-up"></i> Upload Document</h3></div>
+                        <div class="vc-body">
+                            <form id="uploadForm">
+                                <div class="drop-zone" onclick="document.getElementById('fileInput').click()">
+                                    <i class="fa-solid fa-file-pdf"></i>
+                                    <p>Click to select PDF or image files</p>
+                                    <input type="file" id="fileInput" name="file" style="display:none;" onchange="handleFileSelected(this)">
+                                </div>
+                                <div id="fileDetails" style="margin-top:12px;display:none;">
+                                    <p style="font-size:0.78rem;font-weight:600;" id="fileNameText"></p>
+                                    <select id="docCategory" style="width:100%;margin-top:8px;padding:8px 12px;border:1.5px solid var(--border-color);border-radius:8px;font-size:0.8rem;outline:none;">
+                                        <option value="Discharge Summary">Discharge Summary</option>
+                                        <option value="Prescription">Prescription</option>
+                                        <option value="Lab Report">Lab Report</option>
+                                        <option value="Other" selected>Other Support Document</option>
+                                    </select>
+                                    <button class="btn btn-primary btn-full" style="margin-top:12px;" type="submit">Upload Securely</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const mobileToggle = document.getElementById('mobileToggle');
+            const mainContent = document.getElementById('mainContent');
+            if (sidebarToggle) sidebarToggle.addEventListener('click', () => { sidebar.classList.toggle('collapsed'); mainContent.classList.toggle('expanded'); });
+            if (mobileToggle) mobileToggle.addEventListener('click', () => sidebar.classList.toggle('mobile-open'));
+
+            loadVaultData();
+
+            document.getElementById('uploadForm').addEventListener('submit', handleUpload);
+        });
+
+        async function loadVaultData() {
+            try {
+                const res = await fetch('/api/documents/vault', {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('access_token') || ''}` }
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    const docCont = document.getElementById('documentsContainer');
+                    docCont.innerHTML = '';
+                    document.getElementById('docCount').textContent = `${data.documents.length} Files`;
+
+                    if (data.documents.length === 0) {
+                        docCont.innerHTML = '<p style="font-size:0.83rem;color:var(--text-secondary);text-align:center;">No documents uploaded yet. Start organizing your files here.</p>';
+                    } else {
+                        data.documents.forEach(d => {
+                            const docCard = document.createElement('div');
+                            docCard.className = 'doc-item';
+                            docCard.innerHTML = `
+                                <i class="fa-solid fa-file-medical file-icon"></i>
+                                <div class="doc-info">
+                                    <h5>${d.title}</h5>
+                                    <p>${d.category} · ${d.size_mb} MB</p>
+                                </div>
+                                <div style="display:flex;align-items:center;gap:16px;">
+                                    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+                                        <span style="font-size:0.68rem;color:var(--text-secondary);">Share with Caregiver</span>
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" ${d.shared_with_caregiver ? 'checked' : ''} onchange="toggleShare('${d._id}', this)">
+                                            <span class="slider"></span>
+                                        </label>
+                                    </div>
+                                    <button class="btn btn-outline btn-sm" style="font-size:0.75rem;padding:6px 12px;min-height:36px;" onclick="deleteDoc('${d._id}')"><i class="fa-solid fa-trash" style="color:#ef4444;"></i></button>
+                                </div>
+                            `;
+                            docCont.appendChild(docCard);
+                        });
+                    }
+                }
+            } catch (err) {
+                console.error("Error loading vault metrics:", err);
+            }
+        }
+
+        function handleFileSelected(input) {
+            if (input.files.length > 0) {
+                document.getElementById('fileNameText').textContent = input.files[0].name;
+                document.getElementById('fileDetails').style.display = 'block';
+            }
+        }
+
+        async function handleUpload(e) {
+            e.preventDefault();
+            const fileInput = document.getElementById('fileInput');
+            if (fileInput.files.length === 0) return;
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            formData.append('category', document.getElementById('docCategory').value);
+            formData.append('title', fileInput.files[0].name);
+
+            try {
+                const res = await fetch('/api/documents/vault/upload', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('access_token') || ''}` },
+                    body: formData
+                });
+                if (res.ok) {
+                    document.getElementById('fileDetails').style.display = 'none';
+                    document.getElementById('uploadForm').reset();
+                    loadVaultData();
+                }
+            } catch (err) {
+                console.error("Error uploading file:", err);
+            }
+        }
+
+        async function toggleShare(docId, toggle) {
+            try {
+                await fetch('/api/documents/vault/share', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('access_token') || ''}`
+                    },
+                    body: JSON.stringify({ document_id: docId, target: 'caregiver', status: toggle.checked })
+                });
+            } catch (err) {
+                console.error("Error updating sharing permissions:", err);
+            }
+        }
+
+        async function deleteDoc(docId) {
+            if (confirm('Delete this document from vault?')) {
+                try {
+                    const res = await fetch(`/api/documents/vault/${docId}`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': `Bearer ${localStorage.getItem('access_token') || ''}` }
+                    });
+                    if (res.ok) {
+                        loadVaultData();
+                    }
+                } catch (err) {
+                    console.error("Error deleting file:", err);
+                }
+            }
+        }
+    </script>
+</body>
+</html>
