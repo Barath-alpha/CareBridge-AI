@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, current_app
+from flask import Blueprint, request, jsonify, current_app, send_from_directory
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from werkzeug.utils import secure_filename
 from app import db
@@ -54,8 +54,10 @@ def upload_vault_document():
         return jsonify({'error': 'File type not allowed. Supported formats: PDF, PNG, JPG, JPEG, TXT'}), 400
 
     try:
-        # Resolve target directory
+        # Resolve target directory (use /tmp on Vercel)
         upload_dir = os.path.join(current_app.root_path, 'static', 'uploads', 'vault')
+        if os.environ.get('VERCEL') or os.environ.get('AWS_LAMBDA_FUNCTION_NAME'):
+            upload_dir = os.path.join('/tmp', 'uploads', 'vault')
         os.makedirs(upload_dir, exist_ok=True)
 
         doc_id = str(uuid.uuid4())
@@ -111,6 +113,8 @@ def delete_vault_document(id):
 
         # Remove local file
         upload_dir = os.path.join(current_app.root_path, 'static', 'uploads', 'vault')
+        if os.environ.get('VERCEL') or os.environ.get('AWS_LAMBDA_FUNCTION_NAME'):
+            upload_dir = os.path.join('/tmp', 'uploads', 'vault')
         file_path = os.path.join(upload_dir, doc.get('filename'))
         if os.path.exists(file_path):
             os.remove(file_path)
@@ -157,3 +161,15 @@ def toggle_document_share():
         return jsonify({'message': f"Document sharing updated for {target}"}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+@document_bp.route('/static/uploads/vault/<filename>')
+def serve_uploaded_document(filename):
+    """Serves uploaded documents from /tmp if on Vercel, otherwise from the static directory."""
+    tmp_dir = os.path.join('/tmp', 'uploads', 'vault')
+    local_dir = os.path.join(current_app.root_path, 'static', 'uploads', 'vault')
+    
+    if os.path.exists(os.path.join(tmp_dir, filename)):
+        return send_from_directory(tmp_dir, filename)
+    return send_from_directory(local_dir, filename)
+

@@ -11,6 +11,17 @@ from pathlib import Path
 from datetime import datetime
 
 DB_FILE = Path(__file__).parent / 'carebridge_local.json'
+
+if os.environ.get('VERCEL') or os.environ.get('AWS_LAMBDA_FUNCTION_NAME'):
+    TMP_FILE = Path('/tmp') / 'carebridge_local.json'
+    if not TMP_FILE.exists() and DB_FILE.exists():
+        try:
+            import shutil
+            shutil.copy(DB_FILE, TMP_FILE)
+        except Exception as e:
+            print(f"[WARNING] Failed to copy fallback DB to /tmp: {e}")
+    DB_FILE = TMP_FILE
+
 _lock = threading.Lock()
 
 
@@ -22,6 +33,7 @@ def _load() -> dict:
         except Exception:
             pass
     return {'users': []}
+
 
 
 def _save(data: dict) -> None:
