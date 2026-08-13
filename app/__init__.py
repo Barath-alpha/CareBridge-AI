@@ -1,4 +1,5 @@
 import ssl
+import os
 from flask import Flask
 from flask_cors import CORS
 from flask_bcrypt import Bcrypt
@@ -16,6 +17,10 @@ db = None
 
 def _try_mongo(uri: str):
     """Attempt to connect to MongoDB Atlas. Returns (client, db) or (None, None)."""
+    if not uri or "localhost" in uri or "127.0.0.1" in uri:
+        if os.environ.get('VERCEL') or os.environ.get('AWS_LAMBDA_FUNCTION_NAME'):
+            print("[INFO] Vercel environment detected with local/missing MONGO_URI. Skipping MongoDB connection attempt.")
+            return None, None
     try:
         import certifi
         client = MongoClient(

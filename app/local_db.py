@@ -92,6 +92,44 @@ class _Collection:
                     break
             _save(data)
 
+    def count_documents(self, query: dict) -> int:
+        with _lock:
+            data = _load()
+            records = data.get(self._name, [])
+            if not query:
+                return len(records)
+            return sum(1 for r in records if self._matches(r, query))
+
+    def delete_one(self, query: dict):
+        with _lock:
+            data = _load()
+            records = data.get(self._name, [])
+            deleted_count = 0
+            for i, rec in enumerate(records):
+                if self._matches(rec, query):
+                    records.pop(i)
+                    deleted_count = 1
+                    _save(data)
+                    break
+            class Result:
+                def __init__(self, deleted_count):
+                    self.deleted_count = deleted_count
+            return Result(deleted_count)
+
+    def delete_many(self, query: dict):
+        with _lock:
+            data = _load()
+            records = data.get(self._name, [])
+            initial_len = len(records)
+            new_records = [rec for rec in records if not self._matches(rec, query)]
+            deleted_count = initial_len - len(new_records)
+            data[self._name] = new_records
+            _save(data)
+            class Result:
+                def __init__(self, deleted_count):
+                    self.deleted_count = deleted_count
+            return Result(deleted_count)
+
     @staticmethod
     def _matches(record: dict, query: dict) -> bool:
         if not query:
