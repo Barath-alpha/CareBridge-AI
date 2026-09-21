@@ -27,3 +27,11 @@ print(app.url_map)
 def log_request_info():
     print(f"DEBUG REQUEST: PATH_INFO={request.environ.get('PATH_INFO')}, SCRIPT_NAME={request.environ.get('SCRIPT_NAME')}, request.path={request.path}")
 
+@app.route('/health')
+def health():
+    return {"status": "ok"}
+
+def handler(request):
+    # Vercel passes a request object; forward to Flask app
+    from werkzeug.wrappers import Response
+    return Response.from_app(app, request.environ)

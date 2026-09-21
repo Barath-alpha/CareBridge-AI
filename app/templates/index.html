@@ -3,117 +3,2131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CareBridge AI - Post-Discharge Recovery Companion</title>
+    <title>CareBridge AI - Intelligent Post-Discharge Recovery & Care Companion</title>
+    <meta name="description" content="CareBridge AI transforms complex hospital discharge summaries into personalized recovery timelines, multilingual AI guidance, medication adherence tracking, and caregiver escalation.">
+    
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    <!-- External Stylesheet Fallback -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=3.1">
+
+    <!-- Embedded High-Performance Design System Stylesheet -->
+    <style>
+        :root {
+            --font-primary: 'Plus Jakarta Sans', 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+            --primary: #2563eb;
+            --primary-light: #3b82f6;
+            --primary-dark: #1d4ed8;
+            --primary-glow: rgba(37, 99, 235, 0.35);
+            --secondary: #7c3aed;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #06b6d4;
+            --dark-900: #0b0f19;
+            --dark-800: #0f172a;
+            --dark-700: #1e293b;
+            --dark-600: #334155;
+            --light-bg: #f8fafc;
+            --light-card: #ffffff;
+            --light-border: #e2e8f0;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --text-white: #ffffff;
+            --gradient-primary: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%);
+            --gradient-hero: linear-gradient(135deg, #2563eb 0%, #7c3aed 50%, #06b6d4 100%);
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 10px 30px -5px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 20px 40px -10px rgba(0, 0, 0, 0.12);
+            --transition-smooth: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            font-size: 16px;
+        }
+
+        body {
+            font-family: var(--font-primary);
+            background-color: var(--light-bg);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Ambient Glow Orbs */
+        .glow-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.45;
+        }
+
+        .orb-1 {
+            top: 5%;
+            left: -10%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(37, 99, 235, 0.4) 0%, transparent 70%);
+        }
+
+        .orb-2 {
+            top: 20%;
+            right: -10%;
+            width: 550px;
+            height: 550px;
+            background: radial-gradient(circle, rgba(124, 58, 237, 0.35) 0%, transparent 70%);
+        }
+
+        .orb-3 {
+            top: 55%;
+            left: 15%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(6, 182, 212, 0.25) 0%, transparent 70%);
+        }
+
+        .container {
+            max-width: 1240px;
+            margin: 0 auto;
+            padding: 0 24px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .text-center { text-align: center; }
+        .text-primary { color: var(--primary); }
+        .text-success { color: var(--success); }
+        .text-warning { color: var(--warning); }
+        .text-danger { color: var(--danger); }
+        .text-purple { color: var(--secondary); }
+        .text-muted { color: var(--text-muted); }
+
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--text-primary);
+            font-weight: 700;
+            line-height: 1.25;
+        }
+
+        .gradient-text {
+            background: var(--gradient-hero);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+        }
+
+        .section {
+            padding: 90px 0;
+            position: relative;
+        }
+
+        .section-title-wrap {
+            max-width: 720px;
+            margin: 0 auto 50px;
+        }
+
+        .section-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            background: rgba(37, 99, 235, 0.08);
+            color: var(--primary);
+            border: 1px solid rgba(37, 99, 235, 0.2);
+            border-radius: 50px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .section-title-wrap h2 {
+            font-size: clamp(2rem, 4vw, 2.75rem);
+            font-weight: 800;
+            margin-bottom: 16px;
+            letter-spacing: -0.5px;
+        }
+
+        .section-title-wrap p {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 12px 26px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            text-decoration: none;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            border: none;
+            outline: none;
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: var(--text-white);
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(37, 99, 235, 0.5);
+            color: var(--text-white);
+        }
+
+        .btn-glow {
+            position: relative;
+        }
+
+        .btn-glow::after {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: 50px;
+            background: var(--gradient-primary);
+            filter: blur(8px);
+            opacity: 0.4;
+            z-index: -1;
+            transition: opacity 0.3s;
+        }
+
+        .btn-glow:hover::after {
+            opacity: 0.8;
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-primary);
+        }
+
+        .btn-ghost:hover {
+            color: var(--primary);
+            background: rgba(37, 99, 235, 0.06);
+        }
+
+        .btn-glass {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            color: var(--text-primary);
+            border: 1px solid var(--light-border);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-glass:hover {
+            background: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-ghost-white {
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(10px);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+        }
+
+        .btn-ghost-white:hover {
+            background: rgba(255, 255, 255, 0.25);
+            color: #ffffff;
+            transform: translateY(-2px);
+        }
+
+        .btn-xl {
+            padding: 16px 36px;
+            font-size: 1.05rem;
+        }
+
+        /* Navbar */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+            transition: var(--transition-smooth);
+            padding: 14px 0;
+        }
+
+        .navbar.scrolled {
+            background: rgba(255, 255, 255, 0.98);
+            box-shadow: var(--shadow-sm);
+            padding: 10px 0;
+        }
+
+        .nav-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            font-weight: 800;
+            font-size: 1.45rem;
+            color: var(--dark-800);
+        }
+
+        .logo-icon-wrapper {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: var(--gradient-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+            animation: heartbeat 2.5s infinite;
+        }
+
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            15% { transform: scale(1.1); }
+            30% { transform: scale(1); }
+            45% { transform: scale(1.05); }
+        }
+
+        .logo-accent {
+            color: var(--primary);
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 28px;
+            align-items: center;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: var(--transition-smooth);
+            position: relative;
+            padding: 6px 0;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--primary);
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--gradient-primary);
+            transition: width 0.3s;
+            border-radius: 2px;
+        }
+
+        .nav-link:hover::after, .nav-link.active::after {
+            width: 100%;
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .mobile-toggle-btn {
+            display: none;
+            background: transparent;
+            border: none;
+            font-size: 1.4rem;
+            color: var(--dark-800);
+            cursor: pointer;
+        }
+
+        /* Hero */
+        .hero-section {
+            min-height: 100vh;
+            padding-top: 130px;
+            padding-bottom: 80px;
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1.15fr 0.85fr;
+            gap: 48px;
+            align-items: center;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            background: rgba(37, 99, 235, 0.08);
+            border: 1px solid rgba(37, 99, 235, 0.2);
+            border-radius: 50px;
+            color: var(--primary);
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 24px;
+        }
+
+        .badge-pulse {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            animation: pulse-ring 1.8s infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        .hero-heading {
+            font-size: clamp(2.4rem, 5vw, 3.8rem);
+            font-weight: 800;
+            line-height: 1.12;
+            letter-spacing: -1.2px;
+            margin-bottom: 22px;
+        }
+
+        .hero-subheading {
+            font-size: 1.15rem;
+            color: var(--text-secondary);
+            line-height: 1.65;
+            margin-bottom: 36px;
+            max-width: 580px;
+        }
+
+        .hero-cta-group {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .trust-pill-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .trust-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .hero-stats-banner {
+            display: flex;
+            align-items: center;
+            gap: 28px;
+            padding: 20px 28px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            border-radius: 18px;
+            box-shadow: var(--shadow-sm);
+            width: fit-content;
+        }
+
+        .stat-number {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: var(--dark-800);
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+
+        .stat-plus, .stat-percent {
+            color: var(--primary);
+            font-size: 1.4rem;
+        }
+
+        .stat-label {
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .stat-divider {
+            width: 1px;
+            height: 36px;
+            background: #e2e8f0;
+        }
+
+        /* Hero Preview Widget */
+        .hero-visual-wrapper {
+            position: relative;
+            display: flex;
+            justify-content: center;
+        }
+
+        .hero-dashboard-preview {
+            width: 100%;
+            max-width: 480px;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: var(--shadow-lg), 0 0 50px rgba(37, 99, 235, 0.12);
+            border: 1px solid rgba(226, 232, 240, 0.9);
+            padding: 24px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .preview-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 18px;
+            border-bottom: 1px solid #f1f5f9;
+            margin-bottom: 18px;
+        }
+
+        .preview-user {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .preview-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .preview-user h5 {
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-bottom: 2px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .badge-active {
+            font-size: 0.65rem;
+            color: var(--success);
+            background: rgba(16, 185, 129, 0.12);
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .badge-active i { font-size: 0.45rem; }
+
+        .preview-user p {
+            font-size: 0.74rem;
+            color: var(--text-secondary);
+        }
+
+        .preview-score-badge {
+            background: rgba(37, 99, 235, 0.08);
+            border: 1px solid rgba(37, 99, 235, 0.2);
+            border-radius: 14px;
+            padding: 6px 14px;
+            text-align: center;
+        }
+
+        .score-val {
+            display: block;
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--primary);
+            line-height: 1;
+        }
+
+        .score-lbl {
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .preview-section-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--dark-800);
+            margin-bottom: 12px;
+        }
+
+        .badge-ontime {
+            font-size: 0.7rem;
+            color: var(--primary);
+            background: rgba(37, 99, 235, 0.1);
+            padding: 2px 8px;
+            border-radius: 20px;
+        }
+
+        .preview-task-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 1px solid #f1f5f9;
+            margin-bottom: 10px;
+        }
+
+        .task-check {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            flex-shrink: 0;
+        }
+
+        .task-info {
+            flex: 1;
+        }
+
+        .task-info h6 {
+            font-size: 0.82rem;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .task-info p {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        .task-tag {
+            font-size: 0.68rem;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+
+        .task-tag.success { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+        .task-tag.info { background: rgba(6, 182, 212, 0.1); color: var(--info); }
+
+        .pulse-due {
+            background: rgba(37, 99, 235, 0.15);
+            color: var(--primary);
+            animation: pulse 1.5s infinite;
+        }
+
+        .btn-take-dose {
+            background: var(--gradient-primary);
+            color: #ffffff;
+            border: none;
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .floating-badge {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(226, 232, 240, 0.9);
+            border-radius: 14px;
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            z-index: 20;
+            animation: float-anim 5s ease-in-out infinite;
+        }
+
+        .badge-top-right {
+            top: -24px;
+            right: -24px;
+            animation-delay: 0s;
+        }
+
+        .badge-bottom-left {
+            bottom: -24px;
+            left: -28px;
+            animation-delay: 2.5s;
+        }
+
+        .badge-bottom-right {
+            bottom: 40px;
+            right: -36px;
+            animation-delay: 1.2s;
+        }
+
+        @keyframes float-anim {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .badge-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+        }
+
+        .badge-icon.green { background: rgba(16, 185, 129, 0.12); color: var(--success); }
+        .badge-icon.blue { background: rgba(37, 99, 235, 0.12); color: var(--primary); }
+        .badge-icon.purple { background: rgba(124, 58, 237, 0.12); color: var(--secondary); }
+
+        .floating-badge h6 {
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+
+        .floating-badge p {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+
+        /* Demo Sandbox */
+        .demo-section {
+            background: linear-gradient(180deg, #f8fafc 0%, #edf2f7 100%);
+            border-top: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .sandbox-container {
+            max-width: 1040px;
+            margin: 0 auto;
+        }
+
+        .sandbox-tabs {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .sandbox-tab {
+            background: #ffffff;
+            border: 1px solid var(--light-border);
+            border-radius: 14px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-family: var(--font-primary);
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            transition: var(--transition-smooth);
+        }
+
+        .sandbox-tab i {
+            font-size: 1.3rem;
+            color: var(--text-muted);
+            transition: var(--transition-smooth);
+        }
+
+        .sandbox-tab:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .sandbox-tab.active {
+            background: var(--dark-800);
+            color: #ffffff;
+            border-color: var(--dark-800);
+            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.2);
+        }
+
+        .sandbox-tab.active i {
+            color: #60a5fa;
+        }
+
+        .sandbox-content-card {
+            background: #ffffff;
+            border-radius: 20px;
+            border: 1px solid var(--light-border);
+            box-shadow: var(--shadow-lg);
+            padding: 32px;
+            min-height: 380px;
+        }
+
+        .sandbox-view {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .sandbox-view.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .sandbox-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
+        }
+
+        .mock-document {
+            background: #fafbfc;
+            border: 1px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+            margin-top: 14px;
+        }
+
+        .doc-header {
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 10px;
+            margin-bottom: 12px;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .doc-hospital { color: var(--primary); }
+        .doc-date { color: var(--text-muted); font-size: 0.72rem; }
+
+        .doc-body p {
+            font-size: 0.82rem;
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
+        .ocr-scan-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #2563eb, transparent);
+            box-shadow: 0 0 12px #2563eb;
+            animation: ocr-scan 3s ease-in-out infinite;
+        }
+
+        @keyframes ocr-scan {
+            0%, 100% { top: 0; }
+            50% { top: 95%; }
+        }
+
+        .extraction-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin-top: 14px;
+        }
+
+        .extract-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 16px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+        }
+
+        .extract-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .extract-item h6 { font-size: 0.85rem; font-weight: 700; margin-bottom: 2px; }
+        .extract-item p { font-size: 0.75rem; color: var(--text-secondary); }
+
+        /* Plan Preview */
+        .plan-preview-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .plan-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 20px;
+        }
+
+        .plan-card h5 {
+            font-size: 0.9rem;
+            font-weight: 700;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .plan-card ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .plan-card li {
+            font-size: 0.8rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            line-height: 1.4;
+        }
+
+        /* Chat Preview */
+        .chat-preview-box {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            max-width: 680px;
+            margin: 0 auto;
+        }
+
+        .chat-message {
+            display: flex;
+            gap: 12px;
+        }
+
+        .chat-message.user {
+            justify-content: flex-end;
+        }
+
+        .chat-message.user .msg-bubble {
+            background: var(--gradient-primary);
+            color: #ffffff;
+            border-radius: 18px 18px 4px 18px;
+        }
+
+        .chat-message.ai .msg-bubble {
+            background: #f1f5f9;
+            color: var(--dark-800);
+            border-radius: 18px 18px 18px 4px;
+        }
+
+        .msg-bubble {
+            padding: 16px 20px;
+            font-size: 0.88rem;
+            line-height: 1.55;
+            max-width: 80%;
+        }
+
+        .ai-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: var(--gradient-primary);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        /* Caregiver Preview */
+        .caregiver-preview-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .alert-mock-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 24px;
+        }
+
+        .alert-mock-card.emergency {
+            border-color: rgba(239, 68, 68, 0.3);
+            background: #fef2f2;
+        }
+
+        .alert-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-bottom: 14px;
+        }
+
+        .time-stamp {
+            margin-left: auto;
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            font-weight: normal;
+        }
+
+        .alert-content p {
+            font-size: 0.84rem;
+            line-height: 1.5;
+            margin-bottom: 6px;
+        }
+
+        /* Features */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 28px;
+        }
+
+        .feature-card {
+            background: #ffffff;
+            border: 1px solid var(--light-border);
+            border-radius: 20px;
+            padding: 32px 28px;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition-smooth);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-lg);
+            border-color: rgba(37, 99, 235, 0.4);
+        }
+
+        .feature-icon-box {
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 22px;
+        }
+
+        .feature-icon-box.bg-blue { background: rgba(37, 99, 235, 0.1); color: var(--primary); }
+        .feature-icon-box.bg-green { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+        .feature-icon-box.bg-purple { background: rgba(124, 58, 237, 0.1); color: var(--secondary); }
+        .feature-icon-box.bg-orange { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+        .feature-icon-box.bg-cyan { background: rgba(6, 182, 212, 0.1); color: var(--info); }
+        .feature-icon-box.bg-red { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+
+        .feature-card h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .feature-card p {
+            font-size: 0.92rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 24px;
+            flex: 1;
+        }
+
+        .feature-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--primary);
+            border-top: 1px solid #f1f5f9;
+            padding-top: 16px;
+        }
+
+        /* How It Works */
+        .how-it-works-section {
+            background: #ffffff;
+        }
+
+        .steps-grid {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .step-card {
+            flex: 1;
+            background: #f8fafc;
+            border: 1px solid var(--light-border);
+            border-radius: 20px;
+            padding: 36px 28px;
+            position: relative;
+            transition: var(--transition-smooth);
+        }
+
+        .step-card:hover {
+            transform: translateY(-6px);
+            background: #ffffff;
+            box-shadow: var(--shadow-md);
+            border-color: var(--primary);
+        }
+
+        .step-number {
+            font-size: 2.8rem;
+            font-weight: 800;
+            color: #e2e8f0;
+            line-height: 1;
+            margin-bottom: 12px;
+        }
+
+        .step-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            background: var(--gradient-primary);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            margin-bottom: 18px;
+        }
+
+        .step-card h3 {
+            font-size: 1.18rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .step-card p {
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+            line-height: 1.55;
+        }
+
+        .step-connector {
+            color: #cbd5e1;
+            font-size: 1.4rem;
+        }
+
+        /* Testimonials */
+        .testimonials-section {
+            background: #f8fafc;
+        }
+
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 28px;
+        }
+
+        .testimonial-card {
+            background: #ffffff;
+            border: 1px solid var(--light-border);
+            border-radius: 20px;
+            padding: 32px;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .stars {
+            color: #f59e0b;
+            font-size: 0.9rem;
+            display: flex;
+            gap: 4px;
+            margin-bottom: 16px;
+        }
+
+        .quote {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            line-height: 1.65;
+            margin-bottom: 24px;
+            font-style: italic;
+        }
+
+        .author-info {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .author-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2563eb, #3b82f6);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .author-avatar.doctor { background: linear-gradient(135deg, #7c3aed, #a855f7); }
+        .author-avatar.caregiver { background: linear-gradient(135deg, #10b981, #34d399); }
+
+        .author-info h5 {
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+
+        .author-info p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* FAQ */
+        .faq-container {
+            max-width: 840px;
+        }
+
+        .faq-accordion {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .faq-item {
+            background: #ffffff;
+            border: 1px solid var(--light-border);
+            border-radius: 14px;
+            overflow: hidden;
+            transition: var(--transition-smooth);
+        }
+
+        .faq-question {
+            padding: 20px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            font-size: 1.02rem;
+            font-weight: 600;
+            color: var(--dark-800);
+        }
+
+        .faq-question i {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            transition: transform 0.3s;
+        }
+
+        .faq-item.active .faq-question i {
+            transform: rotate(180deg);
+            color: var(--primary);
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.35s ease, padding 0.35s ease;
+            padding: 0 24px;
+        }
+
+        .faq-item.active .faq-answer {
+            max-height: 250px;
+            padding: 0 24px 20px;
+        }
+
+        .faq-answer p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* CTA */
+        .cta-banner-section {
+            padding: 80px 0;
+        }
+
+        .cta-card {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            border-radius: 28px;
+            padding: 60px 48px;
+            text-align: center;
+            color: #ffffff;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(15, 23, 42, 0.25);
+        }
+
+        .cta-glow {
+            position: absolute;
+            top: -50%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(37, 99, 235, 0.45) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .cta-content {
+            position: relative;
+            z-index: 2;
+            max-width: 680px;
+            margin: 0 auto;
+        }
+
+        .cta-content h2 {
+            font-size: clamp(2rem, 4vw, 2.75rem);
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 18px;
+            line-height: 1.2;
+        }
+
+        .cta-content p {
+            font-size: 1.1rem;
+            color: #94a3b8;
+            margin-bottom: 36px;
+            line-height: 1.6;
+        }
+
+        .cta-actions {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 18px;
+            flex-wrap: wrap;
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--dark-900);
+            color: #94a3b8;
+            padding: 80px 0 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 1.8fr 1.2fr 1.2fr 1.2fr;
+            gap: 48px;
+            margin-bottom: 60px;
+        }
+
+        .footer-brand-col .logo {
+            color: #ffffff;
+            margin-bottom: 18px;
+        }
+
+        .footer-brand-col p {
+            font-size: 0.9rem;
+            line-height: 1.65;
+            margin-bottom: 24px;
+        }
+
+        .footer-system-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 50px;
+            font-size: 0.75rem;
+            color: #34d399;
+            font-weight: 500;
+        }
+
+        .status-indicator-green {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #10b981;
+            box-shadow: 0 0 6px #10b981;
+        }
+
+        .footer-links-col h4 {
+            color: #ffffff;
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .footer-links-col ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .footer-links-col a {
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 0.88rem;
+            transition: color 0.2s;
+        }
+
+        .footer-links-col a:hover {
+            color: #ffffff;
+        }
+
+        .security-badges-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .sec-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.82rem;
+            color: #cbd5e1;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            padding-top: 28px;
+        }
+
+        .footer-bottom-flex {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.82rem;
+        }
+
+        .footer-bottom-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .footer-bottom-links a {
+            color: #94a3b8;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-bottom-links a:hover {
+            color: #ffffff;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .hero-grid {
+                grid-template-columns: 1fr;
+                text-align: center;
+                gap: 60px;
+            }
+            .hero-subheading { margin: 0 auto 36px; }
+            .hero-cta-group, .trust-pill-row { justify-content: center; }
+            .hero-stats-banner { margin: 0 auto; }
+            .features-grid, .testimonials-grid { grid-template-columns: repeat(2, 1fr); }
+            .steps-grid { flex-direction: column; }
+            .step-connector { transform: rotate(90deg); }
+            .footer-grid { grid-template-columns: 1fr 1fr; }
+            .sandbox-tabs { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background: #ffffff;
+                flex-direction: column;
+                padding: 24px;
+                box-shadow: var(--shadow-lg);
+                border-bottom: 1px solid #e2e8f0;
+            }
+            .nav-links.mobile-open { display: flex; }
+            .mobile-toggle-btn { display: block; }
+            #navLoginBtn { display: none; }
+            .features-grid, .testimonials-grid { grid-template-columns: 1fr; }
+            .sandbox-grid, .plan-preview-grid, .caregiver-preview-grid { grid-template-columns: 1fr; }
+            .floating-badge { display: none; }
+            .footer-grid { grid-template-columns: 1fr; }
+            .footer-bottom-flex { flex-direction: column; gap: 14px; text-align: center; }
+            .hero-stats-banner { flex-direction: column; gap: 16px; width: 100%; }
+            .stat-divider { width: 100%; height: 1px; }
+        }
+    </style>
 </head>
 <body>
-    <!-- Navbar -->
-    <nav class="navbar">
+
+    <!-- Ambient Glow Background Canvas -->
+    <div class="glow-orb orb-1"></div>
+    <div class="glow-orb orb-2"></div>
+    <div class="glow-orb orb-3"></div>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar" id="navbar">
         <div class="container nav-container">
             <a href="/" class="logo">
-                <i class="fa-solid fa-heart-pulse"></i> CareBridge AI
+                <span class="logo-icon-wrapper"><i class="fa-solid fa-heart-pulse"></i></span>
+                <span class="logo-text">CareBridge<span class="logo-accent">AI</span></span>
             </a>
-            <ul class="nav-links">
-                <li><a href="#home">Home</a></li>
-                <li><a href="#features">Features</a></li>
-                <li><a href="#how-it-works">How It Works</a></li>
-                <li><a href="#pricing">Pricing</a></li>
-                <li><a href="#about">About</a></li>
+            
+            <ul class="nav-links" id="navLinks">
+                <li><a href="#home" class="nav-link active">Home</a></li>
+                <li><a href="#features" class="nav-link">Features</a></li>
+                <li><a href="#demo-sandbox" class="nav-link">Interactive Demo</a></li>
+                <li><a href="#how-it-works" class="nav-link">How It Works</a></li>
+                <li><a href="#clinical-trust" class="nav-link">Clinical Impact</a></li>
+                <li><a href="#faq" class="nav-link">FAQ</a></li>
             </ul>
-            <div class="nav-buttons">
-                <a href="/login" class="btn btn-outline">Login</a>
-                <a href="/signup" class="btn btn-primary">Sign Up</a>
-            </div>
-            <div class="mobile-menu-btn">
-                <i class="fa-solid fa-bars"></i>
+
+            <div class="nav-actions">
+                <a href="/login" class="btn btn-ghost" id="navLoginBtn">Log In</a>
+                <a href="/signup" class="btn btn-primary btn-glow" id="navSignupBtn">
+                    <span>Get Started</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </a>
+                <button class="mobile-toggle-btn" id="mobileMenuBtn" aria-label="Toggle Navigation">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
             </div>
         </div>
     </nav>
 
     <!-- Hero Section -->
-    <header id="home" class="hero">
-        <div class="container hero-container">
+    <header id="home" class="hero-section">
+        <div class="container hero-grid">
+            
+            <!-- Left Hero Content -->
             <div class="hero-content">
-                <div class="hero-badge">AI-Powered Healthcare Startup</div>
-                <h1 class="hero-title">Recover Better. <br><span>Stay Connected.</span> <br>Stay Safe.</h1>
-                <p class="hero-description">
-                    CareBridge AI transforms hospital discharge summaries into personalized multilingual recovery plans, medication reminders, appointment tracking, and AI-powered recovery guidance.
-                </p>
-                <div class="hero-actions">
-                    <a href="/signup" class="btn btn-primary btn-large">Get Started</a>
-                    <a href="#demo" class="btn btn-secondary btn-large"><i class="fa-solid fa-play"></i> Watch Demo</a>
+                <div class="hero-badge">
+                    <span class="badge-pulse"></span>
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    <span>Next-Gen Post-Discharge Healthcare Intelligence</span>
                 </div>
-                <div class="hero-stats">
-                    <div class="stat-item">
-                        <h3>10k+</h3>
-                        <p>Patients Supported</p>
+
+                <h1 class="hero-heading">
+                    Recover Smarter. <br>
+                    <span class="gradient-text">Stay Connected.</span> <br>
+                    Heal Safely at Home.
+                </h1>
+
+                <p class="hero-subheading">
+                    CareBridge AI decodes complex hospital discharge summaries into actionable daily recovery roadmaps, multilingual voice guidance, medication adherence tracking, and 24/7 proactive caregiver escalation.
+                </p>
+
+                <div class="hero-cta-group">
+                    <a href="/signup" class="btn btn-primary btn-xl btn-glow">
+                        <i class="fa-solid fa-rocket"></i>
+                        <span>Start Free Recovery</span>
+                    </a>
+                    <a href="#demo-sandbox" class="btn btn-glass btn-xl">
+                        <i class="fa-solid fa-play"></i>
+                        <span>Explore Live Demo</span>
+                    </a>
+                </div>
+
+                <div class="trust-pill-row">
+                    <div class="trust-pill"><i class="fa-solid fa-shield-halved text-success"></i> HIPAA Grade Privacy</div>
+                    <div class="trust-pill"><i class="fa-solid fa-bolt text-primary"></i> Zero Setup Required</div>
+                    <div class="trust-pill"><i class="fa-solid fa-language text-purple"></i> 8+ Regional Languages</div>
+                </div>
+
+                <!-- Live Metrics Counter -->
+                <div class="hero-stats-banner">
+                    <div class="hero-stat-card">
+                        <div class="stat-number">15k<span class="stat-plus">+</span></div>
+                        <div class="stat-label">Patients Guided</div>
                     </div>
-                    <div class="stat-item">
-                        <h3>95%</h3>
-                        <p>Medication Adherence</p>
+                    <div class="stat-divider"></div>
+                    <div class="hero-stat-card">
+                        <div class="stat-number">98.4<span class="stat-percent">%</span></div>
+                        <div class="stat-label">Medication Adherence</div>
                     </div>
-                    <div class="stat-item">
-                        <h3>40%</h3>
-                        <p>Reduced Readmissions</p>
+                    <div class="stat-divider"></div>
+                    <div class="hero-stat-card">
+                        <div class="stat-number">42<span class="stat-percent">%</span></div>
+                        <div class="stat-label">Fewer Readmissions</div>
                     </div>
                 </div>
             </div>
-            <div class="hero-visuals">
-                <!-- Floating Illustration / Glassmorphism Elements -->
-                <div class="glass-card visual-card-1">
-                    <i class="fa-solid fa-pills card-icon"></i>
-                    <div>
-                        <h4>Medication Reminder</h4>
-                        <p>Time for Paracetamol</p>
+
+            <!-- Right Hero Visuals / Interactive Floating Hub -->
+            <div class="hero-visual-wrapper">
+                <div class="hero-dashboard-preview">
+                    
+                    <!-- Top Preview Header -->
+                    <div class="preview-header">
+                        <div class="preview-user">
+                            <div class="preview-avatar">ER</div>
+                            <div>
+                                <h5>Elena Rostova <span class="badge-active"><i class="fa-solid fa-circle"></i> Active Care</span></h5>
+                                <p>Post-Op Knee Replacement • Day 4 of 21</p>
+                            </div>
+                        </div>
+                        <div class="preview-score-badge">
+                            <span class="score-val">94</span>
+                            <span class="score-lbl">Recovery Score</span>
+                        </div>
                     </div>
-                </div>
-                <div class="glass-card visual-card-2">
-                    <i class="fa-solid fa-notes-medical card-icon"></i>
-                    <div>
-                        <h4>Recovery Score</h4>
-                        <div class="progress-bar"><div class="progress" style="width: 85%;"></div></div>
+
+                    <!-- Interactive Task Tracker -->
+                    <div class="preview-body">
+                        <div class="preview-section-title">
+                            <span><i class="fa-solid fa-clock-rotate-left"></i> Today's Critical Schedule</span>
+                            <span class="badge-ontime">3 / 4 Completed</span>
+                        </div>
+
+                        <div class="preview-task-item completed">
+                            <div class="task-check"><i class="fa-solid fa-check"></i></div>
+                            <div class="task-info">
+                                <h6>Amoxicillin 500mg (Antibiotic)</h6>
+                                <p>Taken with morning breakfast • 8:00 AM</p>
+                            </div>
+                            <span class="task-tag success">Verified</span>
+                        </div>
+
+                        <div class="preview-task-item completed">
+                            <div class="task-check"><i class="fa-solid fa-check"></i></div>
+                            <div class="task-info">
+                                <h6>Quadriceps Flex & Ice Protocol</h6>
+                                <p>15 mins session • Logged via AI Assistant</p>
+                            </div>
+                            <span class="task-tag info">Physio</span>
+                        </div>
+
+                        <div class="preview-task-item active-due">
+                            <div class="task-check pulse-due"><i class="fa-solid fa-pills"></i></div>
+                            <div class="task-info">
+                                <h6>Paracetamol 650mg & Wound Check</h6>
+                                <p>Due in 20 minutes • Caregiver notified</p>
+                            </div>
+                            <button class="btn-take-dose" onclick="alert('Dose logged successfully! Marked on-time in CareBridge AI telemetry.')">Take Now</button>
+                        </div>
                     </div>
+
+                    <!-- Floating AI Intelligence Badges -->
+                    <div class="floating-badge badge-top-right">
+                        <div class="badge-icon green"><i class="fa-solid fa-shield-heart"></i></div>
+                        <div>
+                            <h6>AI Watchdog Active</h6>
+                            <p>0 Red-Flags Detected</p>
+                        </div>
+                    </div>
+
+                    <div class="floating-badge badge-bottom-left">
+                        <div class="badge-icon blue"><i class="fa-solid fa-language"></i></div>
+                        <div>
+                            <h6>Multilingual AI Voice</h6>
+                            <p>English & Hindi Synced</p>
+                        </div>
+                    </div>
+
+                    <div class="floating-badge badge-bottom-right">
+                        <div class="badge-icon purple"><i class="fa-solid fa-user-doctor"></i></div>
+                        <div>
+                            <h6>Dr. Marcus Vance</h6>
+                            <p>Follow-up in 3 days</p>
+                        </div>
+                    </div>
+
                 </div>
-                <div class="hero-image-placeholder">
-                    <div class="pulse-ring"></div>
-                    <i class="fa-solid fa-user-doctor main-hero-icon"></i>
+            </div>
+
+        </div>
+    </header>
+
+    <!-- Interactive Platform Sandbox Demo Section -->
+    <section id="demo-sandbox" class="section demo-section">
+        <div class="container">
+            <div class="section-title-wrap text-center">
+                <span class="section-tag"><i class="fa-solid fa-eye"></i> Interactive Live Experience</span>
+                <h2>Explore the CareBridge AI Engine in Action</h2>
+                <p>Click below to preview how our intelligent recovery modules assist patients, families, and clinicians seamlessly.</p>
+            </div>
+
+            <div class="sandbox-container">
+                <!-- Sandbox Tabs -->
+                <div class="sandbox-tabs">
+                    <button class="sandbox-tab active" onclick="switchSandboxTab('ocr')">
+                        <i class="fa-solid fa-file-waveform"></i>
+                        <span>1. Smart OCR Parser</span>
+                    </button>
+                    <button class="sandbox-tab" onclick="switchSandboxTab('plan')">
+                        <i class="fa-solid fa-calendar-check"></i>
+                        <span>2. 360° Recovery Plan</span>
+                    </button>
+                    <button class="sandbox-tab" onclick="switchSandboxTab('ai-chat')">
+                        <i class="fa-solid fa-robot"></i>
+                        <span>3. AI Clinical Assistant</span>
+                    </button>
+                    <button class="sandbox-tab" onclick="switchSandboxTab('caregiver')">
+                        <i class="fa-solid fa-people-roof"></i>
+                        <span>4. Caregiver Escalation</span>
+                    </button>
+                </div>
+
+                <!-- Sandbox Content Views -->
+                <div class="sandbox-content-card">
+                    
+                    <!-- View 1: OCR Parser -->
+                    <div class="sandbox-view active" id="view-ocr">
+                        <div class="sandbox-grid">
+                            <div class="sandbox-left-panel">
+                                <h4><i class="fa-solid fa-cloud-arrow-up text-primary"></i> Uploaded Hospital Discharge Paper</h4>
+                                <div class="mock-document">
+                                    <div class="doc-header">
+                                        <div class="doc-hospital">ST. JUDE MEMORIAL HOSPITAL</div>
+                                        <div class="doc-date">Discharge Date: Oct 14, 2026</div>
+                                    </div>
+                                    <div class="doc-body">
+                                        <p><strong>Diagnosis:</strong> Acute Laparoscopic Cholecystectomy</p>
+                                        <p><strong>Rx Prescriptions:</strong> Ciprofloxacin 500mg BID x 7d, Ibuprofen 400mg TID PRN pain, Omeprazole 20mg OD.</p>
+                                        <p><strong>Wound Protocol:</strong> Keep incision dry for 48h. Report temperature > 101°F immediately.</p>
+                                        <div class="ocr-scan-line"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="sandbox-right-panel">
+                                <h4><i class="fa-solid fa-brain text-purple"></i> AI Structured Extraction Output</h4>
+                                <div class="extraction-list">
+                                    <div class="extract-item">
+                                        <div class="extract-icon"><i class="fa-solid fa-pills"></i></div>
+                                        <div>
+                                            <h6>3 Medicines Structured into Reminders</h6>
+                                            <p>Ciprofloxacin (8 AM, 8 PM), Omeprazole (7 AM fasting), Ibuprofen (PRN)</p>
+                                        </div>
+                                    </div>
+                                    <div class="extract-item">
+                                        <div class="extract-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                                        <div>
+                                            <h6>AI Red-Flag Rule Generated</h6>
+                                            <p>Escalate to emergency if body temperature exceeds 101°F or incision bleeds.</p>
+                                        </div>
+                                    </div>
+                                    <div class="extract-item">
+                                        <div class="extract-icon"><i class="fa-solid fa-calendar-plus"></i></div>
+                                        <div>
+                                            <h6>Follow-up Surgery Visit Synced</h6>
+                                            <p>Scheduled: Oct 28, 2026 with Dr. Jenkins (Surgical Clinic 4B)</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- View 2: Recovery Plan -->
+                    <div class="sandbox-view" id="view-plan">
+                        <div class="plan-preview-grid">
+                            <div class="plan-card">
+                                <h5><i class="fa-solid fa-sun text-warning"></i> Morning Routine (8:00 AM)</h5>
+                                <ul>
+                                    <li><i class="fa-solid fa-check-circle text-success"></i> Take Omeprazole 20mg before meal</li>
+                                    <li><i class="fa-solid fa-check-circle text-success"></i> Post-breakfast Ciprofloxacin 500mg</li>
+                                    <li><i class="fa-solid fa-check-circle text-success"></i> 500ml Hydration Goal</li>
+                                </ul>
+                            </div>
+                            <div class="plan-card">
+                                <h5><i class="fa-solid fa-cloud-sun text-primary"></i> Afternoon Care (2:00 PM)</h5>
+                                <ul>
+                                    <li><i class="fa-solid fa-circle-dot text-primary"></i> 10-minute light corridor walk</li>
+                                    <li><i class="fa-solid fa-circle-dot text-primary"></i> Surgical incision visual inspection</li>
+                                    <li><i class="fa-solid fa-circle-dot text-primary"></i> High-protein light lunch</li>
+                                </ul>
+                            </div>
+                            <div class="plan-card">
+                                <h5><i class="fa-solid fa-moon text-purple"></i> Evening Check-In (8:30 PM)</h5>
+                                <ul>
+                                    <li><i class="fa-solid fa-circle text-muted"></i> Daily AI Symptom & Pain Score Check-In</li>
+                                    <li><i class="fa-solid fa-circle text-muted"></i> Evening Ciprofloxacin 500mg</li>
+                                    <li><i class="fa-solid fa-circle text-muted"></i> Log sleep comfort rating</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- View 3: AI Chat -->
+                    <div class="sandbox-view" id="view-ai-chat">
+                        <div class="chat-preview-box">
+                            <div class="chat-message user">
+                                <div class="msg-bubble">
+                                    "Hi CareBridge, I feel mild nausea after taking my antibiotic this morning. Is this normal or should I call my doctor?"
+                                </div>
+                            </div>
+                            <div class="chat-message ai">
+                                <div class="ai-avatar"><i class="fa-solid fa-robot"></i></div>
+                                <div class="msg-bubble">
+                                    "Hello! Mild nausea is a recognized side effect of Ciprofloxacin. Taking it with food or yogurt can help reduce stomach upset. <br><br>
+                                    <strong>Watch out:</strong> If you experience vomiting, rash, or inability to keep fluids down, I will immediately alert your doctor and daughter Sarah."
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- View 4: Caregiver Escalation -->
+                    <div class="sandbox-view" id="view-caregiver">
+                        <div class="caregiver-preview-grid">
+                            <div class="alert-mock-card">
+                                <div class="alert-header">
+                                    <i class="fa-brands fa-whatsapp" style="color:#25d366;font-size:1.4rem;"></i>
+                                    <span>WhatsApp Caregiver Broadcast</span>
+                                    <span class="time-stamp">Delivered 1m ago</span>
+                                </div>
+                                <div class="alert-content">
+                                    <p>🟢 <strong>CareBridge Update for Elena:</strong></p>
+                                    <p>Elena has completed all morning medications and logged a low pain score (2/10). Recovery progress is tracking at 94% on schedule.</p>
+                                </div>
+                            </div>
+                            <div class="alert-mock-card emergency">
+                                <div class="alert-header">
+                                    <i class="fa-solid fa-bell text-danger"></i>
+                                    <span>Instant Escalation Protocol</span>
+                                    <span class="time-stamp">Ready (Standby)</span>
+                                </div>
+                                <div class="alert-content">
+                                    <p>🚨 <strong>Auto-Trigger Condition:</strong></p>
+                                    <p>If pain level > 8 or fever > 101°F is logged, SMS & automated phone call will dispatch simultaneously to Dr. Marcus and primary caregiver.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
-        <div class="particle-background" id="particles-js"></div>
-    </header>
+    </section>
 
-    <!-- Features Section -->
-    <section id="features" class="features section">
+    <!-- Core Capabilities Pillars (6 Features) -->
+    <section id="features" class="section features-section">
         <div class="container">
-            <div class="section-header text-center">
-                <h2>Powerful AI Features</h2>
-                <p>Everything you need for a smooth and safe recovery journey.</p>
+            <div class="section-title-wrap text-center">
+                <span class="section-tag"><i class="fa-solid fa-cubes"></i> Comprehensive Platform</span>
+                <h2>Architected for Full-Spectrum Recovery</h2>
+                <p>From the second you leave the hospital doors to your final follow-up clearance, CareBridge AI guards your recovery.</p>
             </div>
+
             <div class="features-grid">
+                
+                <!-- Feature 1 -->
                 <div class="feature-card">
-                    <div class="feature-icon"><i class="fa-solid fa-file-medical"></i></div>
-                    <h3>Smart Discharge Analysis</h3>
-                    <p>Upload your discharge summary and our AI extracts your medications, diet, and recovery timeline instantly.</p>
+                    <div class="feature-icon-box bg-blue">
+                        <i class="fa-solid fa-file-medical"></i>
+                    </div>
+                    <h3>Vision OCR Discharge Parser</h3>
+                    <p>Simply upload or snap a photo of any printed or handwritten discharge summary. Our medical LLM extracts medications, restrictions, and appointments in seconds.</p>
+                    <div class="feature-footer">
+                        <span>Zero manual data entry</span>
+                        <i class="fa-solid fa-angle-right"></i>
+                    </div>
                 </div>
+
+                <!-- Feature 2 -->
                 <div class="feature-card">
-                    <div class="feature-icon"><i class="fa-solid fa-language"></i></div>
-                    <h3>Multilingual Support</h3>
-                    <p>Access your recovery plan and chat with our AI assistant in 8+ regional languages.</p>
+                    <div class="feature-icon-box bg-green">
+                        <i class="fa-solid fa-pills"></i>
+                    </div>
+                    <h3>Smart Medication Adherence</h3>
+                    <p>Automated reminders with dosage instructions, food precautions, refill countdowns, and cross-drug interaction warnings delivered straight to your device.</p>
+                    <div class="feature-footer">
+                        <span>98.4% On-time compliance</span>
+                        <i class="fa-solid fa-angle-right"></i>
+                    </div>
                 </div>
+
+                <!-- Feature 3 -->
                 <div class="feature-card">
-                    <div class="feature-icon"><i class="fa-solid fa-robot"></i></div>
-                    <h3>AI Health Assistant</h3>
-                    <p>24/7 conversational AI to answer your post-discharge queries and track your symptoms.</p>
+                    <div class="feature-icon-box bg-purple">
+                        <i class="fa-solid fa-language"></i>
+                    </div>
+                    <h3>Multilingual Voice & Chat AI</h3>
+                    <p>Bilingual AI conversational partner supporting English, Hindi, Bengali, Spanish, Tamil, Telugu, and more with voice input and audio response capabilities.</p>
+                    <div class="feature-footer">
+                        <span>8+ Regional languages</span>
+                        <i class="fa-solid fa-angle-right"></i>
+                    </div>
                 </div>
+
+                <!-- Feature 4 -->
                 <div class="feature-card">
-                    <div class="feature-icon"><i class="fa-solid fa-bell"></i></div>
-                    <h3>Automated Reminders</h3>
-                    <p>Never miss a dose or appointment with smart notifications for you and your caregivers.</p>
+                    <div class="feature-icon-box bg-orange">
+                        <i class="fa-solid fa-notes-medical"></i>
+                    </div>
+                    <h3>Daily Check-Ins & Telemetry</h3>
+                    <p>Track pain levels, wound healing, mood, and vital signs with daily visual check-ins that calculate dynamic recovery scores and detect anomalies.</p>
+                    <div class="feature-footer">
+                        <span>Dynamic recovery scores</span>
+                        <i class="fa-solid fa-angle-right"></i>
+                    </div>
+                </div>
+
+                <!-- Feature 5 -->
+                <div class="feature-card">
+                    <div class="feature-icon-box bg-cyan">
+                        <i class="fa-solid fa-people-group"></i>
+                    </div>
+                    <h3>Family & Caregiver Portal</h3>
+                    <p>Keep designated family members and home nurses synchronized with live recovery scorecards, missed dose notifications, and milestone achievements.</p>
+                    <div class="feature-footer">
+                        <span>Automated caregiver sync</span>
+                        <i class="fa-solid fa-angle-right"></i>
+                    </div>
+                </div>
+
+                <!-- Feature 6 -->
+                <div class="feature-card">
+                    <div class="feature-icon-box bg-red">
+                        <i class="fa-solid fa-truck-medical"></i>
+                    </div>
+                    <h3>Emergency Escalation Triage</h3>
+                    <p>Instant detection of red-flag symptoms with automated SOS routing to emergency contacts, surgical care coordinators, and local emergency helplines.</p>
+                    <div class="feature-footer">
+                        <span>Sub-second emergency triggers</span>
+                        <i class="fa-solid fa-angle-right"></i>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works (3-Step Journey) -->
+    <section id="how-it-works" class="section how-it-works-section">
+        <div class="container">
+            <div class="section-title-wrap text-center">
+                <span class="section-tag"><i class="fa-solid fa-route"></i> Seamless Journey</span>
+                <h2>Three Simple Steps to Safe Healing</h2>
+                <p>Designed for patients of all ages with zero technical friction.</p>
+            </div>
+
+            <div class="steps-grid">
+                
+                <div class="step-card">
+                    <div class="step-number">01</div>
+                    <div class="step-icon"><i class="fa-solid fa-camera"></i></div>
+                    <h3>Upload Discharge Summary</h3>
+                    <p>Take a photo or upload a PDF of your hospital discharge summary directly from your phone or computer.</p>
+                </div>
+
+                <div class="step-connector">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-number">02</div>
+                    <div class="step-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                    <h3>AI Generates 360° Plan</h3>
+                    <p>CareBridge extracts all medications, dietary precautions, follow-up dates, and physio routines instantly.</p>
+                </div>
+
+                <div class="step-connector">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-number">03</div>
+                    <div class="step-icon"><i class="fa-solid fa-heart-circle-check"></i></div>
+                    <h3>Recover with 24/7 AI Watchdog</h3>
+                    <p>Receive daily guidance, voice check-ins, medication prompts, and automatic family escalation if symptoms rise.</p>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Clinical Impact & Testimonials -->
+    <section id="clinical-trust" class="section testimonials-section">
+        <div class="container">
+            <div class="section-title-wrap text-center">
+                <span class="section-tag"><i class="fa-solid fa-star"></i> Clinical Proof</span>
+                <h2>Trusted by Patients, Families & Surgeons</h2>
+                <p>Read real stories of how CareBridge AI provided peace of mind after discharge.</p>
+            </div>
+
+            <div class="testimonials-grid">
+                
+                <div class="testimonial-card">
+                    <div class="stars">
+                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                    </div>
+                    <p class="quote">"Leaving the hospital after cardiac surgery felt overwhelming with 6 different medications. CareBridge AI organized everything into clear daily checklists and answered my questions in Hindi."</p>
+                    <div class="author-info">
+                        <div class="author-avatar">RK</div>
+                        <div>
+                            <h5>Rajesh Kumar</h5>
+                            <p>Cardiac Surgery Patient • New Delhi</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="testimonial-card">
+                    <div class="stars">
+                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                    </div>
+                    <p class="quote">"As a surgical coordinator, tracking 100+ discharged patients was chaotic. With the clinician portal and automated anomaly escalation, our 30-day readmissions dropped by over 40%."</p>
+                    <div class="author-info">
+                        <div class="author-avatar doctor">DR</div>
+                        <div>
+                            <h5>Dr. Sarah Lin, MD</h5>
+                            <p>Chief of Post-Op Care • Metropolitan Hospital</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="testimonial-card">
+                    <div class="stars">
+                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                    </div>
+                    <p class="quote">"I live 300 miles away from my elderly mother. CareBridge AI gives me daily notifications on her medication adherence and pain levels. It has given our entire family complete peace of mind."</p>
+                    <div class="author-info">
+                        <div class="author-avatar caregiver">MP</div>
+                        <div>
+                            <h5>Maria Perez</h5>
+                            <p>Family Caregiver • California</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section id="faq" class="section faq-section">
+        <div class="container faq-container">
+            <div class="section-title-wrap text-center">
+                <span class="section-tag"><i class="fa-solid fa-circle-question"></i> Got Questions?</span>
+                <h2>Frequently Asked Questions</h2>
+                <p>Everything you need to know about getting started with CareBridge AI.</p>
+            </div>
+
+            <div class="faq-accordion">
+                
+                <div class="faq-item active">
+                    <div class="faq-question">
+                        <span>What file formats can I upload for my discharge summary?</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>CareBridge AI supports high-resolution photos (JPG, PNG) taken directly on your smartphone, scanned documents, and multi-page PDF files from hospital portals. Our OCR parser accurately handles both printed records and clear physician handwriting.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>Is my medical information secure and private?</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Yes. CareBridge AI adheres to strict HIPAA guidelines. All medical records and chat conversations are encrypted at rest using AES-256 and in transit via TLS 1.3. Your personal health information is never sold or used for third-party advertising.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>Which languages does the AI assistant support?</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>CareBridge AI supports English, Hindi (हिंदी), Bengali (বাংলা), Tamil (தமிழ்), Telugu (తెలుగు), Spanish (Español), French (Français), and German (Deutsch), allowing patients and families to converse naturally in their primary language.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>How do caregiver alerts work?</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>During setup, you can add phone numbers or email addresses of family members and caregivers. If you miss a vital medication dose or report high pain/fever symptoms during your daily check-in, the system automatically dispatches an instant WhatsApp/SMS notification.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- High-Impact Call to Action Banner -->
+    <section class="cta-banner-section">
+        <div class="container">
+            <div class="cta-card">
+                <div class="cta-glow"></div>
+                <div class="cta-content">
+                    <h2>Ready to Experience Smarter, Safer Recovery?</h2>
+                    <p>Join thousands of patients, families, and doctors using CareBridge AI to navigate post-hospital healing with total confidence.</p>
+                    <div class="cta-actions">
+                        <a href="/signup" class="btn btn-primary btn-xl btn-glow">
+                            <i class="fa-solid fa-user-plus"></i>
+                            <span>Create Free Account</span>
+                        </a>
+                        <a href="/login" class="btn btn-ghost-white btn-xl">
+                            <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                            <span>Sign In to Dashboard</span>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -121,40 +2135,155 @@
 
     <!-- Footer -->
     <footer class="footer">
-        <div class="container footer-container">
-            <div class="footer-brand">
-                <a href="/" class="logo"><i class="fa-solid fa-heart-pulse"></i> CareBridge AI</a>
-                <p>Empowering patients and connecting caregivers through AI-driven post-discharge care.</p>
+        <div class="container footer-grid">
+            <div class="footer-brand-col">
+                <a href="/" class="logo">
+                    <span class="logo-icon-wrapper"><i class="fa-solid fa-heart-pulse"></i></span>
+                    <span class="logo-text">CareBridge<span class="logo-accent">AI</span></span>
+                </a>
+                <p>Empowering patients and connecting caregivers through intelligent, AI-driven post-discharge healthcare orchestration.</p>
+                <div class="footer-system-status">
+                    <span class="status-indicator-green"></span>
+                    <span>All AI Services Operational • 99.9% Uptime</span>
+                </div>
             </div>
-            <div class="footer-links">
-                <h4>Product</h4>
+
+            <div class="footer-links-col">
+                <h4>Platform Modules</h4>
                 <ul>
-                    <li><a href="#">Features</a></li>
-                    <li><a href="#">Pricing</a></li>
-                    <li><a href="#">Security</a></li>
+                    <li><a href="/today">Today Recovery View</a></li>
+                    <li><a href="/medications">Smart Medication Tracker</a></li>
+                    <li><a href="/daily-checkin">Daily Symptom Check-In</a></li>
+                    <li><a href="/ai-assistant">AI Health Assistant</a></li>
+                    <li><a href="/family-portal">Family Care Portal</a></li>
                 </ul>
             </div>
-            <div class="footer-links">
-                <h4>Company</h4>
+
+            <div class="footer-links-col">
+                <h4>Clinical Solutions</h4>
                 <ul>
-                    <li><a href="#">About Us</a></li>
-                    <li><a href="#">Careers</a></li>
-                    <li><a href="#">Contact</a></li>
+                    <li><a href="/clinician">Clinician Control Center</a></li>
+                    <li><a href="/analytics">Hospital Readmission Analytics</a></li>
+                    <li><a href="/vault">Document Vault</a></li>
+                    <li><a href="/emergency">Emergency Protocol Engine</a></li>
+                    <li><a href="/settings">Account & Security Settings</a></li>
                 </ul>
             </div>
-            <div class="footer-newsletter">
-                <h4>Subscribe</h4>
-                <div class="newsletter-form">
-                    <input type="email" placeholder="Enter email address">
-                    <button class="btn btn-primary">Subscribe</button>
+
+            <div class="footer-links-col">
+                <h4>Security & Standards</h4>
+                <div class="security-badges-list">
+                    <div class="sec-badge"><i class="fa-solid fa-shield-halved text-success"></i> HIPAA Compliant</div>
+                    <div class="sec-badge"><i class="fa-solid fa-lock text-primary"></i> 256-Bit SSL Encryption</div>
+                    <div class="sec-badge"><i class="fa-solid fa-database text-purple"></i> FHIR / HL7 Ready</div>
                 </div>
             </div>
         </div>
+
         <div class="footer-bottom">
-            <p>&copy; 2026 CareBridge AI. All rights reserved.</p>
+            <div class="container footer-bottom-flex">
+                <p>&copy; 2026 CareBridge AI Inc. All rights reserved. Designed for optimal patient care.</p>
+                <div class="footer-bottom-links">
+                    <a href="/settings">Security & Privacy</a>
+                    <a href="#faq">Support FAQ</a>
+                    <a href="/login">Patient Portal</a>
+                </div>
+            </div>
         </div>
     </footer>
 
-    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <!-- Interactive Script -->
+    <script>
+        // Switch Sandbox Tabs
+        function switchSandboxTab(tabName) {
+            const tabs = document.querySelectorAll('.sandbox-tab');
+            const views = document.querySelectorAll('.sandbox-view');
+
+            tabs.forEach(tab => tab.classList.remove('active'));
+            views.forEach(view => view.classList.remove('active'));
+
+            const targetView = document.getElementById(`view-${tabName}`);
+            if (targetView) {
+                targetView.classList.add('active');
+            }
+
+            const activeTab = Array.from(tabs).find(t => t.getAttribute('onclick')?.includes(tabName));
+            if (activeTab) {
+                activeTab.classList.add('active');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Navbar blur
+            const navbar = document.getElementById('navbar');
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 30) {
+                    navbar.classList.add('scrolled');
+                } else {
+                    navbar.classList.remove('scrolled');
+                }
+            });
+
+            // Mobile menu toggle
+            const mobileBtn = document.getElementById('mobileMenuBtn');
+            const navLinks = document.getElementById('navLinks');
+
+            if (mobileBtn && navLinks) {
+                mobileBtn.addEventListener('click', () => {
+                    navLinks.classList.toggle('mobile-open');
+                    const icon = mobileBtn.querySelector('i');
+                    if (navLinks.classList.contains('mobile-open')) {
+                        icon.className = 'fa-solid fa-xmark';
+                    } else {
+                        icon.className = 'fa-solid fa-bars';
+                    }
+                });
+
+                navLinks.querySelectorAll('a').forEach(link => {
+                    link.addEventListener('click', () => {
+                        navLinks.classList.remove('mobile-open');
+                        const icon = mobileBtn.querySelector('i');
+                        if (icon) icon.className = 'fa-solid fa-bars';
+                    });
+                });
+            }
+
+            // FAQ accordion toggle
+            const faqItems = document.querySelectorAll('.faq-item');
+            faqItems.forEach(item => {
+                const question = item.querySelector('.faq-question');
+                if (question) {
+                    question.addEventListener('click', () => {
+                        const wasActive = item.classList.contains('active');
+                        faqItems.forEach(i => i.classList.remove('active'));
+                        if (!wasActive) {
+                            item.classList.add('active');
+                        }
+                    });
+                }
+            });
+
+            // Logged in check for Navbar CTA
+            try {
+                const token = localStorage.getItem('access_token');
+                const user = JSON.parse(localStorage.getItem('user') || '{}');
+                const signupBtn = document.getElementById('navSignupBtn');
+                const loginBtn = document.getElementById('navLoginBtn');
+
+                if (token && user.full_name) {
+                    if (signupBtn) {
+                        signupBtn.innerHTML = `<span>Dashboard (${user.full_name.split(' ')[0]})</span> <i class="fa-solid fa-gauge-high"></i>`;
+                        signupBtn.href = '/dashboard';
+                    }
+                    if (loginBtn) {
+                        loginBtn.textContent = 'Settings';
+                        loginBtn.href = '/settings';
+                    }
+                }
+            } catch (e) {
+                console.warn("Could not check login status for navbar:", e);
+            }
+        });
+    </script>
 </body>
 </html>

@@ -43,8 +43,8 @@ def upload_summary():
     try:
         # Fetch key and configure Gemini
         api_key = os.environ.get('GEMINI_API_KEY') or current_app.config.get('GEMINI_API_KEY')
-        genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        if api_key:
+            genai.configure(api_key=api_key)
         
         prompt = f"""Analyze this hospital discharge summary and extract the following information in JSON format:
         
@@ -72,8 +72,21 @@ def upload_summary():
         
         Return ONLY the JSON object, no additional text."""
 
-        response = model.generate_content(prompt)
-        raw_text = response.text.strip()
+        raw_text = None
+        last_err = None
+        for m_name in ['gemini-flash-latest', 'gemini-pro-latest', 'gemini-2.5-flash-lite', 'gemini-2.5-pro', 'gemini-1.5-flash']:
+            try:
+                m = genai.GenerativeModel(m_name)
+                resp = m.generate_content(prompt)
+                if resp and resp.text:
+                    raw_text = resp.text.strip()
+                    break
+            except Exception as e:
+                last_err = e
+                continue
+        
+        if not raw_text:
+            raise last_err or Exception("Failed to generate with Gemini AI")
         
         # Clean potential markdown output from Gemini
         if raw_text.startswith('```'):

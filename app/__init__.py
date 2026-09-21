@@ -71,6 +71,7 @@ def create_app(config_class=Config):
     from app.routes.analytics_routes import analytics_bp
     from app.routes.document_routes import document_bp
     from app.routes.journal_routes import journal_bp
+    from app.routes.notification_routes import notification_bp
 
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
@@ -83,5 +84,6 @@ def create_app(config_class=Config):
     app.register_blueprint(analytics_bp)
     app.register_blueprint(document_bp)
     app.register_blueprint(journal_bp)
+    app.register_blueprint(notification_bp)
 
     return app

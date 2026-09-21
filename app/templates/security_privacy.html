@@ -3,37 +3,412 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Security & Privacy - CareBridge AI</title>
-    <meta name="description" content="Manage your account security and audit logs.">
+    <title>Account Settings & Profile - CareBridge AI</title>
+    <meta name="description" content="Manage your personal profile, update your name, manage credentials, and review security audit logs on CareBridge AI.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
     <style>
-        .page-body { padding: 28px; display: flex; flex-direction: column; gap: 24px; }
-        .sc { background: #fff; border-radius: 16px; box-shadow: var(--shadow); }
-        .sc-header { padding: 18px 22px 0; display: flex; align-items: center; justify-content: space-between; }
-        .sc-header h3 { font-size: 0.95rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
-        .sc-header h3 i { color: var(--primary); }
-        .sc-body { padding: 18px 22px 22px; }
-        
-        .security-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        
-        .audit-item {
-            display: flex; align-items: center; justify-content: space-between; padding: 12px 14px;
-            border-bottom: 1px solid var(--border-color);
+        .page-body {
+            padding: 28px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            max-width: 1300px;
+            margin: 0 auto;
+            width: 100%;
         }
-        .audit-item:last-child { border-bottom: none; }
-        .audit-info h5 { font-size: 0.85rem; font-weight: 600; }
-        .audit-info p { font-size: 0.74rem; color: var(--text-secondary); }
-        .audit-time { font-size: 0.72rem; color: var(--text-secondary); }
 
-        @media (max-width: 1000px) { .security-layout { grid-template-columns: 1fr; } }
+        /* Profile Banner Card */
+        .profile-hero-card {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .profile-hero-card::after {
+            content: '';
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(37, 99, 235, 0.35) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .profile-hero-left {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-avatar {
+            width: 88px;
+            height: 88px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.4rem;
+            font-weight: 700;
+            color: #ffffff;
+            box-shadow: 0 0 25px rgba(37, 99, 235, 0.5);
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            flex-shrink: 0;
+            text-transform: uppercase;
+        }
+
+        .hero-meta h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .hero-meta p {
+            font-size: 0.9rem;
+            color: #94a3b8;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .hero-badges {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .badge-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        .badge-role {
+            background: rgba(37, 99, 235, 0.25);
+            color: #60a5fa;
+            border: 1px solid rgba(96, 165, 250, 0.3);
+            text-transform: uppercase;
+        }
+
+        .badge-verified {
+            background: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+            border: 1px solid rgba(52, 211, 153, 0.3);
+        }
+
+        /* Settings Grid Layout */
+        .settings-grid {
+            display: grid;
+            grid-template-columns: 1.4fr 1fr;
+            gap: 24px;
+        }
+
+        .sc {
+            background: #ffffff;
+            border-radius: 18px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sc-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #fafbfc;
+        }
+
+        .sc-header h3 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 0;
+        }
+
+        .sc-header h3 i {
+            color: #2563eb;
+            font-size: 1.15rem;
+        }
+
+        .sc-body {
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Forms & Inputs */
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group label {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #475569;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .form-group label .required {
+            color: #ef4444;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-wrapper i.input-icon {
+            position: absolute;
+            left: 14px;
+            color: #94a3b8;
+            font-size: 0.9rem;
+            pointer-events: none;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 14px 10px 40px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.88rem;
+            color: #1e293b;
+            background: #f8fafc;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .form-control:focus {
+            background: #ffffff;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+        }
+
+        .form-control:disabled, .form-control[readonly] {
+            background: #f1f5f9;
+            color: #64748b;
+            cursor: not-allowed;
+        }
+
+        select.form-control {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            background-size: 16px;
+            padding-right: 36px;
+        }
+
+        .input-hint {
+            font-size: 0.72rem;
+            color: #64748b;
+        }
+
+        /* Buttons */
+        .btn-save-profile {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: #ffffff;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+            align-self: flex-start;
+        }
+
+        .btn-save-profile:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(37, 99, 235, 0.35);
+        }
+
+        .btn-save-profile:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Audit Item */
+        .audit-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .audit-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 1px solid #f1f5f9;
+            transition: background 0.2s;
+        }
+
+        .audit-item:hover {
+            background: #f1f5f9;
+        }
+
+        .audit-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .audit-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+
+        .audit-icon.blue { background: rgba(37, 99, 235, 0.1); color: #2563eb; }
+        .audit-icon.green { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+        .audit-icon.purple { background: rgba(124, 58, 237, 0.1); color: #7c3aed; }
+
+        .audit-info h5 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin: 0 0 2px 0;
+        }
+
+        .audit-info p {
+            font-size: 0.74rem;
+            color: #64748b;
+            margin: 0;
+        }
+
+        .audit-time {
+            font-size: 0.72rem;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        /* Toast Message */
+        .toast-container {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+        }
+
+        .toast {
+            min-width: 320px;
+            max-width: 420px;
+            padding: 14px 20px;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.88rem;
+            font-weight: 500;
+            pointer-events: auto;
+            transform: translateX(120%);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border-left: 5px solid #2563eb;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.success {
+            border-left-color: #10b981;
+            color: #065f46;
+        }
+
+        .toast.success i { color: #10b981; font-size: 1.2rem; }
+
+        .toast.error {
+            border-left-color: #ef4444;
+            color: #991b1b;
+        }
+
+        .toast.error i { color: #ef4444; font-size: 1.2rem; }
+
+        @media (max-width: 1000px) {
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
+            .profile-hero-card {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 20px;
+            }
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
     {% set active_page = 'settings' %}
     {% include '_sidebar.html' %}
+
+    <!-- Toast Notification Container -->
+    <div class="toast-container" id="toastContainer"></div>
 
     <main class="main-content" id="mainContent">
         <header class="top-header">
@@ -41,45 +416,649 @@
                 <button class="mobile-toggle" id="mobileToggle"><i class="fa-solid fa-bars"></i></button>
                 <div class="header-greeting">
                     <h2>Account Settings ⚙️</h2>
-                    <p>Manage security sessions, Google integration, and review audit logs.</p>
+                    <p>Manage your profile, update your name, secure your credentials, and review activity.</p>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="user-avatar" id="headerAvatar" style="background:#2563eb;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;">
+                    <span id="headerAvatarChar">U</span>
                 </div>
             </div>
         </header>
 
         <div class="page-body">
-            <div class="security-layout">
-                <!-- Security Settings -->
+
+            <!-- Profile Hero Banner -->
+            <div class="profile-hero-card">
+                <div class="profile-hero-left">
+                    <div class="hero-avatar" id="profileHeroAvatar">P</div>
+                    <div class="hero-meta">
+                        <h3 id="heroUserName">Loading Profile... <i class="fa-solid fa-circle-check text-primary" style="font-size:1.1rem;color:#38bdf8;"></i></h3>
+                        <p><i class="fa-regular fa-envelope"></i> <span id="heroUserEmail">loading...</span></p>
+                        <div class="hero-badges">
+                            <span class="badge-pill badge-role" id="heroUserRole"><i class="fa-solid fa-id-badge"></i> Patient</span>
+                            <span class="badge-pill badge-verified"><i class="fa-solid fa-shield-heart"></i> Verified Account</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="hero-actions">
+                    <button class="btn btn-outline" style="color:#ffffff;border-color:rgba(255,255,255,0.3);background:rgba(255,255,255,0.08);" onclick="document.getElementById('inputFullName').focus()">
+                        <i class="fa-solid fa-pen-to-square"></i> Edit Name & Profile
+                    </button>
+                </div>
+            </div>
+
+            <!-- Settings Grid -->
+            <div class="settings-grid">
+                
+                <!-- Left Column: Personal Information & Name Edit -->
                 <div class="sc">
-                    <div class="sc-header"><h3><i class="fa-solid fa-shield-halved"></i> Security Controls</h3></div>
-                    <div class="sc-body" style="display:flex;flex-direction:column;gap:16px;">
-                        <div>
-                            <h5 style="font-size:0.88rem;font-weight:600;margin-bottom:4px;">Google Integration</h5>
-                            <p style="font-size:0.78rem;color:var(--text-secondary);margin-bottom:8px;">Your account is successfully linked to Google. You can sign in using one click.</p>
-                            <button class="btn btn-outline btn-sm" style="font-size:0.78rem;min-height:36px;"><i class="fa-brands fa-google"></i> Disconnect Google</button>
-                        </div>
-                        <hr style="border:none;border-top:1px solid var(--border-color);">
-                        <div>
-                            <h5 style="font-size:0.88rem;font-weight:600;margin-bottom:4px;">Two-Factor Authentication</h5>
-                            <p style="font-size:0.78rem;color:var(--text-secondary);margin-bottom:8px;">Add an extra layer of security to your healthcare data.</p>
-                            <button class="btn btn-primary btn-sm" style="font-size:0.78rem;min-height:36px;"><i class="fa-solid fa-key"></i> Enable 2FA</button>
-                        </div>
+                    <div class="sc-header">
+                        <h3><i class="fa-solid fa-user-pen"></i> Personal Profile Information</h3>
+                        <span style="font-size:0.75rem;color:#64748b;font-weight:500;">Live Cloud Synced</span>
+                    </div>
+                    <div class="sc-body">
+                        <form id="profileForm" onsubmit="handleProfileUpdate(event)">
+                            
+                            <!-- Full Name (Primary Requested Feature) -->
+                            <div class="form-group" style="margin-bottom: 16px;">
+                                <label for="inputFullName">
+                                    Full Name <span class="required">*</span>
+                                </label>
+                                <div class="input-wrapper">
+                                    <i class="fa-solid fa-user input-icon"></i>
+                                    <input type="text" id="inputFullName" class="form-control" placeholder="Enter your full name" required minlength="2" maxlength="100">
+                                </div>
+                                <span class="input-hint">Your name will be displayed across your recovery reports, prescriptions, and clinician notes.</span>
+                            </div>
+
+                            <div class="form-row" style="margin-bottom: 16px;">
+                                <!-- Email (Read-only) -->
+                                <div class="form-group">
+                                    <label for="inputEmail">Email Address</label>
+                                    <div class="input-wrapper">
+                                        <i class="fa-solid fa-envelope input-icon"></i>
+                                        <input type="email" id="inputEmail" class="form-control" readonly disabled>
+                                    </div>
+                                    <span class="input-hint">Associated with your sign-in account.</span>
+                                </div>
+
+                                <!-- Mobile Number -->
+                                <div class="form-group">
+                                    <label for="inputMobile">Mobile / WhatsApp Number</label>
+                                    <div class="input-wrapper">
+                                        <i class="fa-solid fa-phone input-icon"></i>
+                                        <input type="tel" id="inputMobile" class="form-control" placeholder="+1 (555) 000-0000">
+                                    </div>
+                                    <span class="input-hint">Used for SMS/WhatsApp medication alerts.</span>
+                                </div>
+                            </div>
+
+                            <div class="form-row" style="margin-bottom: 16px;">
+                                <!-- Age -->
+                                <div class="form-group">
+                                    <label for="inputAge">Age</label>
+                                    <div class="input-wrapper">
+                                        <i class="fa-solid fa-cake-candles input-icon"></i>
+                                        <input type="number" id="inputAge" class="form-control" placeholder="e.g. 45" min="1" max="125">
+                                    </div>
+                                </div>
+
+                                <!-- Gender -->
+                                <div class="form-group">
+                                    <label for="inputGender">Gender</label>
+                                    <div class="input-wrapper">
+                                        <i class="fa-solid fa-venus-mars input-icon"></i>
+                                        <select id="inputGender" class="form-control">
+                                            <option value="">Select Gender</option>
+                                            <option value="Male">Male</option>
+                                            <option value="Female">Female</option>
+                                            <option value="Non-binary">Non-binary</option>
+                                            <option value="Other">Other</option>
+                                            <option value="Prefer not to say">Prefer not to say</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-row" style="margin-bottom: 16px;">
+                                <!-- Preferred Language -->
+                                <div class="form-group">
+                                    <label for="inputLanguage">Preferred Language</label>
+                                    <div class="input-wrapper">
+                                        <i class="fa-solid fa-language input-icon"></i>
+                                        <select id="inputLanguage" class="form-control">
+                                            <option value="English">English</option>
+                                            <option value="Hindi">Hindi (हिंदी)</option>
+                                            <option value="Bengali">Bengali (বাংলা)</option>
+                                            <option value="Tamil">Tamil (தமிழ்)</option>
+                                            <option value="Telugu">Telugu (తెలుగు)</option>
+                                            <option value="Spanish">Spanish (Español)</option>
+                                            <option value="French">French (Français)</option>
+                                            <option value="German">German (Deutsch)</option>
+                                        </select>
+                                    </div>
+                                    <span class="input-hint">AI Assistant will converse in this language.</span>
+                                </div>
+
+                                <!-- Country -->
+                                <div class="form-group">
+                                    <label for="inputCountry">Country / Region</label>
+                                    <div class="input-wrapper">
+                                        <i class="fa-solid fa-earth-americas input-icon"></i>
+                                        <input type="text" id="inputCountry" class="form-control" placeholder="e.g. United States, India">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Emergency Contact -->
+                            <div class="form-group" style="margin-bottom: 24px;">
+                                <label for="inputEmergency">Emergency Contact Details</label>
+                                <div class="input-wrapper">
+                                    <i class="fa-solid fa-truck-medical input-icon"></i>
+                                    <input type="text" id="inputEmergency" class="form-control" placeholder="e.g. Sarah Jenkins (Daughter) - +1 555-0199">
+                                </div>
+                                <span class="input-hint">Notified automatically during critical health score escalations.</span>
+                            </div>
+
+                            <button type="submit" id="btnSaveProfile" class="btn-save-profile">
+                                <i class="fa-solid fa-floppy-disk"></i> Save Profile Changes
+                            </button>
+                        </form>
                     </div>
                 </div>
 
-                <!-- Audit logs -->
-                <div class="sc">
-                    <div class="sc-header"><h3><i class="fa-solid fa-list-check"></i> Security Audit Log</h3></div>
-                    <div class="sc-body" id="auditLogContainer">
-                        <div class="audit-item"><div class="audit-info"><h5>User Sign In</h5><p>Google OAuth Authentication</p></div><span class="audit-time">Just Now</span></div>
-                        <div class="audit-item"><div class="audit-info"><h5>MongoDB Atlas Connect</h5><p>Success</p></div><span class="audit-time">5 mins ago</span></div>
+                <!-- Right Column: Password, Security & Audit Logs -->
+                <div style="display:flex;flex-direction:column;gap:24px;">
+                    
+                    <!-- Password Security -->
+                    <div class="sc">
+                        <div class="sc-header">
+                            <h3><i class="fa-solid fa-lock"></i> Security & Password</h3>
+                        </div>
+                        <div class="sc-body">
+                            <form id="passwordForm" onsubmit="handlePasswordChange(event)">
+                                <div class="form-group" style="margin-bottom: 12px;">
+                                    <label for="inputCurrentPass">Current Password</label>
+                                    <div class="input-wrapper">
+                                        <i class="fa-solid fa-key input-icon"></i>
+                                        <input type="password" id="inputCurrentPass" class="form-control" placeholder="••••••••" required>
+                                    </div>
+                                </div>
+                                <div class="form-group" style="margin-bottom: 12px;">
+                                    <label for="inputNewPass">New Password</label>
+                                    <div class="input-wrapper">
+                                        <i class="fa-solid fa-shield-halved input-icon"></i>
+                                        <input type="password" id="inputNewPass" class="form-control" placeholder="Min 8 characters" minlength="8" required>
+                                    </div>
+                                </div>
+                                <div class="form-group" style="margin-bottom: 16px;">
+                                    <label for="inputConfirmPass">Confirm New Password</label>
+                                    <div class="input-wrapper">
+                                        <i class="fa-solid fa-circle-check input-icon"></i>
+                                        <input type="password" id="inputConfirmPass" class="form-control" placeholder="Repeat new password" minlength="8" required>
+                                    </div>
+                                </div>
+                                <button type="submit" id="btnChangePass" class="btn btn-outline btn-sm" style="font-size:0.82rem;padding:9px 18px;border-radius:8px;cursor:pointer;">
+                                    <i class="fa-solid fa-rotate"></i> Update Password
+                                </button>
+                            </form>
+                        </div>
                     </div>
+
+                    <!-- Firebase Cloud Messaging (FCM HTTP v1) Controls -->
+                    <div class="sc">
+                        <div class="sc-header">
+                            <h3><i class="fa-solid fa-paper-plane"></i> FCM HTTP v1 Messaging & Push</h3>
+                            <span class="badge-pill" style="background:rgba(16,185,129,0.15);color:#10b981;font-size:0.72rem;font-weight:600;"><i class="fa-solid fa-circle" style="font-size:0.5rem;"></i> HTTP v1 Active</span>
+                        </div>
+                        <div class="sc-body" style="gap:16px;">
+                            <div>
+                                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                                    <label style="font-size:0.8rem;font-weight:600;color:#475569;"><i class="fa-solid fa-mobile-screen"></i> Device Registration Token</label>
+                                    <button type="button" onclick="generateSimulatedToken()" class="btn btn-outline btn-sm" style="font-size:0.7rem;padding:2px 8px;min-height:24px;border-radius:6px;">Get Token</button>
+                                </div>
+                                <div class="input-wrapper">
+                                    <input type="text" id="fcmTokenInput" class="form-control" style="font-size:0.76rem;padding-left:12px;font-family:monospace;" placeholder="e.g. bk3RNwTe3H0:CI2k_HHwgIpoDKCIZvvDMExUdFQ3P1..." value="bk3RNwTe3H0:CI2k_HHwgIpoDKCIZvvDMExUdFQ3P1_SAMPLE_DEVICE_TOKEN">
+                                </div>
+                            </div>
+
+                            <form id="fcmSendForm" onsubmit="handleSendFCM(event)" style="display:flex;flex-direction:column;gap:12px;">
+                                <div class="form-group">
+                                    <label for="fcmTargetTopic" style="font-size:0.8rem;font-weight:600;color:#475569;">Target Topic / Channel</label>
+                                    <select id="fcmTargetTopic" class="form-control" style="font-size:0.82rem;">
+                                        <option value="all_patients">Topic: all_patients</option>
+                                        <option value="medication_reminders">Topic: medication_reminders</option>
+                                        <option value="emergency_escalations">Topic: emergency_escalations</option>
+                                        <option value="direct_token">Direct: To Registered Token Above</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="fcmMsgTitle" style="font-size:0.8rem;font-weight:600;color:#475569;">Notification Title</label>
+                                    <input type="text" id="fcmMsgTitle" class="form-control" style="font-size:0.82rem;padding-left:12px;" value="CareBridge AI • Daily Recovery Update" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="fcmMsgBody" style="font-size:0.8rem;font-weight:600;color:#475569;">Notification Body</label>
+                                    <textarea id="fcmMsgBody" class="form-control" style="font-size:0.82rem;padding:10px 12px;min-height:60px;resize:vertical;" required>Remember to log your post-dinner pain score and take Ciprofloxacin 500mg.</textarea>
+                                </div>
+
+                                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                                    <button type="submit" id="btnSendFCM" class="btn btn-primary btn-sm" style="font-size:0.8rem;padding:8px 16px;border-radius:8px;">
+                                        <i class="fa-solid fa-paper-plane"></i> Send FCM Message
+                                    </button>
+                                    <button type="button" onclick="sendPresetMedication()" class="btn btn-outline btn-sm" style="font-size:0.78rem;padding:8px 12px;border-radius:8px;">
+                                        <i class="fa-solid fa-pills text-primary"></i> Test Med Reminder
+                                    </button>
+                                    <button type="button" onclick="sendPresetEmergency()" class="btn btn-outline btn-sm" style="font-size:0.78rem;padding:8px 12px;border-radius:8px;border-color:rgba(239,68,68,0.4);color:#ef4444;">
+                                        <i class="fa-solid fa-bell"></i> Test SOS Alert
+                                    </button>
+                                </div>
+                            </form>
+
+                            <div id="fcmResultBox" style="display:none;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:10px;padding:12px;font-size:0.75rem;">
+                                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+                                    <strong style="color:#0f172a;"><i class="fa-solid fa-code"></i> HTTP v1 Response:</strong>
+                                    <span id="fcmStatusBadge" class="badge-pill badge-verified" style="font-size:0.65rem;">SUCCESS 200</span>
+                                </div>
+                                <pre id="fcmResponseJson" style="margin:0;font-family:monospace;white-space:pre-wrap;word-break:break-all;color:#334155;"></pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Connected Accounts -->
+                    <div class="sc">
+                        <div class="sc-header">
+                            <h3><i class="fa-brands fa-google"></i> Connected Accounts</h3>
+                        </div>
+                        <div class="sc-body" style="gap:14px;">
+                            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;border:1px solid #e2e8f0;border-radius:12px;background:#f8fafc;">
+                                <div style="display:flex;align-items:center;gap:12px;">
+                                    <i class="fa-brands fa-google" style="font-size:1.3rem;color:#ea4335;"></i>
+                                    <div>
+                                        <h5 style="font-size:0.85rem;font-weight:600;margin:0 0 2px 0;">Google OAuth SSO</h5>
+                                        <p style="font-size:0.75rem;color:#64748b;margin:0;">One-click secure login enabled</p>
+                                    </div>
+                                </div>
+                                <span style="font-size:0.75rem;color:#10b981;font-weight:600;background:rgba(16,185,129,0.1);padding:4px 10px;border-radius:20px;">
+                                    <i class="fa-solid fa-check"></i> Linked
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Audit Log -->
+                    <div class="sc">
+                        <div class="sc-header">
+                            <h3><i class="fa-solid fa-clock-rotate-left"></i> Security Audit Log</h3>
+                        </div>
+                        <div class="sc-body">
+                            <div class="audit-list" id="auditLogList">
+                                <div class="audit-item">
+                                    <div class="audit-left">
+                                        <div class="audit-icon blue"><i class="fa-solid fa-arrow-right-to-bracket"></i></div>
+                                        <div class="audit-info">
+                                            <h5>Active Session Initialized</h5>
+                                            <p>JWT Secure Bearer Access</p>
+                                        </div>
+                                    </div>
+                                    <span class="audit-time">Just Now</span>
+                                </div>
+                                <div class="audit-item">
+                                    <div class="audit-left">
+                                        <div class="audit-icon green"><i class="fa-solid fa-shield"></i></div>
+                                        <div class="audit-info">
+                                            <h5>Database Authenticated</h5>
+                                            <p>Encrypted Cloud Storage Connected</p>
+                                        </div>
+                                    </div>
+                                    <span class="audit-time">2 mins ago</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
+
             </div>
+
         </div>
     </main>
 
     <script>
+        // Toast notification utility
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            const icon = type === 'success' ? 'fa-solid fa-circle-check' : 'fa-solid fa-triangle-exclamation';
+            toast.innerHTML = `<i class="${icon}"></i> <span>${message}</span>`;
+            container.appendChild(toast);
+
+            setTimeout(() => toast.classList.add('show'), 50);
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 350);
+            }, 4000);
+        }
+
+        // Add dynamic log entry
+        function addAuditLog(title, desc) {
+            const list = document.getElementById('auditLogList');
+            if (!list) return;
+            const item = document.createElement('div');
+            item.className = 'audit-item';
+            item.innerHTML = `
+                <div class="audit-left">
+                    <div class="audit-icon purple"><i class="fa-solid fa-pen-nib"></i></div>
+                    <div class="audit-info">
+                        <h5>${title}</h5>
+                        <p>${desc}</p>
+                    </div>
+                </div>
+                <span class="audit-time">Just Now</span>
+            `;
+            list.insertBefore(item, list.firstChild);
+        }
+
+        // Initialize and Load Profile Data
+        async function loadUserProfile() {
+            const token = localStorage.getItem('access_token');
+            const cachedUser = JSON.parse(localStorage.getItem('user') || '{}');
+
+            // Pre-populate with cached user data immediately
+            if (cachedUser.full_name) {
+                populateUI(cachedUser);
+            }
+
+            if (!token) {
+                window.location.href = '/login';
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/auth/me', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (res.ok) {
+                    const userData = await res.json();
+                    // Merge and save to localStorage
+                    localStorage.setItem('user', JSON.stringify({ ...cachedUser, ...userData }));
+                    populateUI(userData);
+                } else if (res.status === 401) {
+                    localStorage.removeItem('access_token');
+                    window.location.href = '/login';
+                }
+            } catch (err) {
+                console.error("Failed to load user profile:", err);
+            }
+        }
+
+        function populateUI(user) {
+            const fullName = user.full_name || 'Patient';
+            const email = user.email || 'patient@carebridge.ai';
+            const role = user.role || 'patient';
+
+            // Top Hero Card
+            document.getElementById('heroUserName').innerHTML = `${fullName} <i class="fa-solid fa-circle-check text-primary" style="font-size:1.1rem;color:#38bdf8;"></i>`;
+            document.getElementById('heroUserEmail').textContent = email;
+            document.getElementById('heroUserRole').innerHTML = `<i class="fa-solid fa-id-badge"></i> ${role.toUpperCase()}`;
+            
+            const initial = fullName.trim().charAt(0).toUpperCase() || 'P';
+            document.getElementById('profileHeroAvatar').textContent = initial;
+            const headerAvatarChar = document.getElementById('headerAvatarChar');
+            if (headerAvatarChar) headerAvatarChar.textContent = initial;
+
+            // Form inputs
+            document.getElementById('inputFullName').value = fullName;
+            document.getElementById('inputEmail').value = email;
+            document.getElementById('inputMobile').value = user.mobile_number || '';
+            document.getElementById('inputAge').value = user.age || '';
+            if (user.gender) document.getElementById('inputGender').value = user.gender;
+            if (user.preferred_language) document.getElementById('inputLanguage').value = user.preferred_language;
+            document.getElementById('inputCountry').value = user.country || '';
+            document.getElementById('inputEmergency').value = user.emergency_contact || '';
+        }
+
+        // Handle Profile Update (Name & Details)
+        async function handleProfileUpdate(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnSaveProfile');
+            const token = localStorage.getItem('access_token');
+
+            if (!token) {
+                showToast('Authentication session expired. Please log in again.', 'error');
+                setTimeout(() => window.location.href = '/login', 1500);
+                return;
+            }
+
+            const fullName = document.getElementById('inputFullName').value.trim();
+            if (fullName.length < 2) {
+                showToast('Name must be at least 2 characters long.', 'error');
+                return;
+            }
+
+            const payload = {
+                full_name: fullName,
+                mobile_number: document.getElementById('inputMobile').value.trim(),
+                age: document.getElementById('inputAge').value.trim(),
+                gender: document.getElementById('inputGender').value,
+                preferred_language: document.getElementById('inputLanguage').value,
+                country: document.getElementById('inputCountry').value.trim(),
+                emergency_contact: document.getElementById('inputEmergency').value.trim()
+            };
+
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Saving Profile...`;
+
+            try {
+                const response = await fetch('/api/auth/profile', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Update access token if provided
+                    if (data.access_token) {
+                        localStorage.setItem('access_token', data.access_token);
+                    }
+                    // Update user in localStorage
+                    if (data.user) {
+                        localStorage.setItem('user', JSON.stringify(data.user));
+                        populateUI(data.user);
+                    } else {
+                        const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+                        const updated = { ...currentUser, ...payload };
+                        localStorage.setItem('user', JSON.stringify(updated));
+                        populateUI(updated);
+                    }
+
+                    showToast(`Profile updated successfully! Name changed to "${fullName}".`, 'success');
+                    addAuditLog('Profile Name & Details Updated', `Name updated to: ${fullName}`);
+                } else {
+                    showToast(data.message || 'Failed to update profile.', 'error');
+                }
+            } catch (err) {
+                console.error("Profile update error:", err);
+                showToast('Network error while updating profile. Please try again.', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Save Profile Changes`;
+            }
+        }
+
+        // Handle Password Change
+        async function handlePasswordChange(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnChangePass');
+            const token = localStorage.getItem('access_token');
+
+            const current_password = document.getElementById('inputCurrentPass').value;
+            const new_password = document.getElementById('inputNewPass').value;
+            const confirm_password = document.getElementById('inputConfirmPass').value;
+
+            if (new_password !== confirm_password) {
+                showToast('New passwords do not match.', 'error');
+                return;
+            }
+
+            if (new_password.length < 8) {
+                showToast('Password must be at least 8 characters long.', 'error');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Updating...`;
+
+            try {
+                const res = await fetch('/api/auth/change-password', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ current_password, new_password })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    showToast('Password updated successfully!', 'success');
+                    document.getElementById('passwordForm').reset();
+                    addAuditLog('Account Password Changed', 'Master security key updated');
+                } else {
+                    showToast(data.message || 'Failed to update password.', 'error');
+                }
+            } catch (err) {
+                console.error("Password update error:", err);
+                showToast('Network error updating password.', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fa-solid fa-rotate"></i> Update Password`;
+            }
+        }
+
+        // FCM Token generator
+        function generateSimulatedToken() {
+            const sample = 'fcm_' + Math.random().toString(36).substring(2, 15) + '_' + Date.now() + ':APA91b' + Math.random().toString(36).substring(2, 20);
+            document.getElementById('fcmTokenInput').value = sample;
+            showToast('New simulated FCM device token assigned.', 'success');
+        }
+
+        // Handle Send FCM
+        async function handleSendFCM(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnSendFCM');
+            const targetType = document.getElementById('fcmTargetTopic').value;
+            const title = document.getElementById('fcmMsgTitle').value.trim();
+            const body = document.getElementById('fcmMsgBody').value.trim();
+            const token = document.getElementById('fcmTokenInput').value.trim();
+
+            const payload = { title, body };
+            if (targetType === 'direct_token') {
+                payload.token = token;
+            } else {
+                payload.topic = targetType;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Sending via FCM v1...`;
+
+            try {
+                const res = await fetch('/api/notifications/send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+                const resultBox = document.getElementById('fcmResultBox');
+                const responseJson = document.getElementById('fcmResponseJson');
+                const statusBadge = document.getElementById('fcmStatusBadge');
+
+                resultBox.style.display = 'block';
+                responseJson.textContent = JSON.stringify(data, null, 2);
+
+                if (res.ok) {
+                    statusBadge.className = 'badge-pill badge-verified';
+                    statusBadge.textContent = 'DELIVERED (HTTP 200)';
+                    showToast('FCM Message sent successfully!', 'success');
+                    addAuditLog('FCM HTTP v1 Message Dispatched', `Title: "${title}" • Target: ${targetType}`);
+                } else {
+                    statusBadge.className = 'badge-pill';
+                    statusBadge.style.background = '#fef2f2';
+                    statusBadge.style.color = '#ef4444';
+                    statusBadge.textContent = 'FAILED (' + res.status + ')';
+                    showToast(data.message || 'FCM delivery failed.', 'error');
+                }
+            } catch (err) {
+                console.error("FCM dispatch error:", err);
+                showToast('Network error sending FCM notification.', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Send FCM Message`;
+            }
+        }
+
+        // Send Preset Medication Reminder
+        async function sendPresetMedication() {
+            try {
+                const token = document.getElementById('fcmTokenInput').value.trim();
+                const res = await fetch('/api/notifications/medication-reminder', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        token: token,
+                        medication_name: 'Ciprofloxacin 500mg',
+                        dosage: '1 tablet with meal',
+                        time: 'Morning 8:00 AM'
+                    })
+                });
+                const data = await res.json();
+                const resultBox = document.getElementById('fcmResultBox');
+                resultBox.style.display = 'block';
+                document.getElementById('fcmResponseJson').textContent = JSON.stringify(data, null, 2);
+                showToast('Medication reminder dispatched via FCM HTTP v1!', 'success');
+                addAuditLog('FCM Medication Alert Dispatched', 'Ciprofloxacin 500mg reminder');
+            } catch(e) {
+                showToast('Failed to dispatch medication reminder.', 'error');
+            }
+        }
+
+        // Send Preset Emergency Alert
+        async function sendPresetEmergency() {
+            try {
+                const res = await fetch('/api/notifications/emergency-alert', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        patient_name: document.getElementById('inputFullName').value || 'Elena Rostova',
+                        severity: 'High (Immediate Action Required)',
+                        symptoms: 'Patient logged sudden acute surgical site pain (8/10)'
+                    })
+                });
+                const data = await res.json();
+                const resultBox = document.getElementById('fcmResultBox');
+                resultBox.style.display = 'block';
+                document.getElementById('fcmResponseJson').textContent = JSON.stringify(data, null, 2);
+                showToast('Emergency SOS notification dispatched via FCM!', 'error');
+                addAuditLog('FCM Emergency SOS Alert Broadcast', 'High severity acute pain logged');
+            } catch(e) {
+                showToast('Failed to dispatch emergency alert.', 'error');
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
+            loadUserProfile();
+
+            // Mobile menu toggles
             const sidebar = document.getElementById('sidebar');
             const sidebarToggle = document.getElementById('sidebarToggle');
             const mobileToggle = document.getElementById('mobileToggle');

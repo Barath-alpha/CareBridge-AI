@@ -159,7 +159,7 @@ def get_me():
         'full_name':          user.get('full_name', ''),
         'email':              user.get('email', ''),
         'mobile_number':      user.get('mobile_number', ''),
-        'age':                user.get('age'),
+        'age':                user.get('age', ''),
         'gender':             user.get('gender', ''),
         'preferred_language': user.get('preferred_language', 'English'),
         'country':            user.get('country', ''),
@@ -167,6 +167,163 @@ def get_me():
         'role':               user.get('role', 'patient'),
         'created_at':         str(user.get('created_at', '')),
     }), 200
+
+
+@auth_bp.route('/profile', methods=['PUT', 'POST'])
+@auth_bp.route('/update-profile', methods=['PUT', 'POST'])
+@jwt_required()
+def update_profile():
+    """Update user profile details including name, mobile, age, gender, language, etc."""
+    user_id = get_jwt_identity()
+    data = request.get_json() or {}
+
+    user = None
+    query_id = user_id
+    if _HAS_OBJECTID:
+        try:
+            oid = ObjectId(user_id)
+            user = db.users.find_one({'_id': oid})
+            if user:
+                query_id = oid
+        except Exception:
+            pass
+    if user is None:
+        user = db.users.find_one({'_id': user_id})
+        query_id = user_id
+
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
+
+    update_fields = {}
+
+    # Validate and update full_name if provided
+    if 'full_name' in data:
+        full_name = str(data['full_name']).strip()
+        if len(full_name) < 2:
+            return jsonify({'message': 'Name must be at least 2 characters long'}), 400
+        update_fields['full_name'] = full_name
+
+    # Optional profile fields
+    if 'mobile_number' in data:
+        update_fields['mobile_number'] = str(data['mobile_number']).strip()
+    if 'age' in data:
+        age_val = data['age']
+        if age_val is not None and str(age_val).strip() != '':
+            try:
+                update_fields['age'] = int(age_val)
+            except ValueError:
+                update_fields['age'] = str(age_val).strip()
+        else:
+            update_fields['age'] = ''
+    if 'gender' in data:
+        update_fields['gender'] = str(data['gender']).strip()
+    if 'preferred_language' in data:
+        update_fields['preferred_language'] = str(data['preferred_language']).strip() or 'English'
+    if 'country' in data:
+        update_fields['country'] = str(data['country']).strip()
+    if 'emergency_contact' in data:
+        update_fields['emergency_contact'] = str(data['emergency_contact']).strip()
+
+    if not update_fields:
+        return jsonify({'message': 'No profile fields provided to update'}), 400
+
+    update_fields['updated_at'] = datetime.datetime.utcnow().isoformat()
+
+    # Perform DB update
+    try:
+        db.users.update_one({'_id': query_id}, {'$set': update_fields})
+    except Exception as e:
+        return jsonify({'message': f'Failed to update profile: {str(e)}'}), 500
+
+    # Fetch updated user
+    updated_user = None
+    if _HAS_OBJECTID and isinstance(query_id, ObjectId):
+        updated_user = db.users.find_one({'_id': query_id})
+    if updated_user is None:
+        updated_user = db.users.find_one({'_id': str(user_id)})
+
+    if not updated_user:
+        updated_user = {**user, **update_fields}
+
+    final_name = updated_user.get('full_name', user.get('full_name', ''))
+    final_email = updated_user.get('email', user.get('email', ''))
+    final_role = updated_user.get('role', user.get('role', 'patient'))
+
+    # Generate refreshed access token with updated claims
+    new_access_token = create_access_token(
+        identity=str(user_id),
+        additional_claims={
+            'full_name': final_name,
+            'email':     final_email,
+            'role':      final_role,
+        }
+    )
+
+    user_payload = {
+        'id':                 str(user_id),
+        'full_name':          final_name,
+        'email':              final_email,
+        'mobile_number':      updated_user.get('mobile_number', ''),
+        'age':                updated_user.get('age', ''),
+        'gender':             updated_user.get('gender', ''),
+        'preferred_language': updated_user.get('preferred_language', 'English'),
+        'country':            updated_user.get('country', ''),
+        'emergency_contact':  updated_user.get('emergency_contact', ''),
+        'role':               final_role,
+    }
+
+    return jsonify({
+        'message': 'Profile updated successfully',
+        'access_token': new_access_token,
+        'user': user_payload
+    }), 200
+
+
+@auth_bp.route('/change-password', methods=['POST'])
+@jwt_required()
+def change_password():
+    """Change the user's password securely."""
+    user_id = get_jwt_identity()
+    data = request.get_json() or {}
+
+    current_password = data.get('current_password', '')
+    new_password = data.get('new_password', '')
+
+    if not current_password or not new_password:
+        return jsonify({'message': 'Current password and new password are required'}), 400
+
+    if len(new_password) < 8:
+        return jsonify({'message': 'New password must be at least 8 characters long'}), 400
+
+    user = None
+    query_id = user_id
+    if _HAS_OBJECTID:
+        try:
+            oid = ObjectId(user_id)
+            user = db.users.find_one({'_id': oid})
+            if user:
+                query_id = oid
+        except Exception:
+            pass
+    if user is None:
+        user = db.users.find_one({'_id': user_id})
+        query_id = user_id
+
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
+
+    # Verify current password
+    if not bcrypt.check_password_hash(user.get('password', ''), current_password):
+        return jsonify({'message': 'Incorrect current password'}), 401
+
+    # Hash new password
+    hashed = bcrypt.generate_password_hash(new_password).decode('utf-8')
+    try:
+        db.users.update_one({'_id': query_id}, {'$set': {'password': hashed, 'updated_at': datetime.datetime.utcnow().isoformat()}})
+    except Exception as e:
+        return jsonify({'message': f'Failed to update password: {str(e)}'}), 500
+
+    return jsonify({'message': 'Password updated successfully'}), 200
 
 
 @auth_bp.route('/logout', methods=['POST'])
